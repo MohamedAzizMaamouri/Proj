@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finaliser ma commande - WatchStore{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="mb-4"><i class="fas fa-credit-card me-2"></i>Finaliser ma commande</h1>
+
+        {{ form_start(form) }}
+        <div class="row">
+            <!-- Order Form -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Informations de livraison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" value="{{ app.user.firstName }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" value="{{ app.user.lastName }}" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ app.user.email }}" readonly>
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.shippingAddress) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.billingAddress) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Info -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Informations de paiement</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Mode démo :</strong> Aucun paiement réel ne sera effectué.
+                            Cette boutique est à des fins de démonstration uniquement.
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Numéro de carte</label>
+                                <input type="text" class="form-control" placeholder="1234 5678 9012 3456" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date d'expiration</label>
+                                <input type="text" class="form-control" placeholder="MM/AA" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-control" placeholder="123" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Résumé de commande</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart.cartItems %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ item.product.name }}</h6>
+                                    <small class="text-muted">{{ item.product.brand }} - Qté: {{ item.quantity }}</small>
+                                </div>
+                                <span class="fw-bold">{{ item.subTotal|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            {% if not loop.last %}<hr class="my-2">{% endif %}
+                        {% endfor %}
+
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sous-total:</span>
+                            <span>{{ cart.total|number_format(2, ',', ' ') }} €</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Livraison:</span>
+                            <span class="text-success">Gratuite</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>TVA (20%):</span>
+                            <span>{{ (cart.total * 0.2)|number_format(2, ',', ' ') }} €</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-primary fs-5">{{ (cart.total * 1.2)|number_format(2, ',', ' ') }} €</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-check me-2"></i>Confirmer la commande
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Paiement 100% sécurisé
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+
+    <script>
+        // Synchroniser les champs d'adresse
+        document.addEventListener('DOMContentLoaded', function() {
+            const shippingTextarea = document.querySelector('textarea[name="order[shippingAddress]"]');
+            const billingTextarea = document.querySelector('textarea[name="order[billingAddress]"]');
+
+            if (shippingTextarea && billingTextarea) {
+                shippingTextarea.addEventListener('input', function() {
+                    billingTextarea.value = this.value;
+                });
+            }
+        });
+    </script>
+{% endblock %}

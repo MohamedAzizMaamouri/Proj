@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.name }} - WatchStore{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}">Produits</a></li>
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+            <!-- Product Image -->
+            <div class="col-lg-6">
+                {% if product.image %}
+                    <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid rounded shadow" alt="{{ product.name }}">
+                {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center shadow" style="height: 500px;">
+                        <i class="fas fa-clock fa-5x text-muted"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <span class="badge bg-primary">{{ product.brand }}</span>
+                </div>
+
+                <h1 class="display-5 fw-bold mb-3">{{ product.name }}</h1>
+                <p class="text-muted fs-5 mb-4">{{ product.model }}</p>
+
+                <div class="mb-4">
+                    <span class="display-6 text-primary fw-bold">{{ product.price|number_format(2, ',', ' ') }} €</span>
+                </div>
+
+                <div class="mb-4">
+                    <h5>Description</h5>
+                    <p class="text-muted">{{ product.description }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Marque:</strong> {{ product.brand }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Modèle:</strong> {{ product.model }}
+                        </div>
+                        <div class="col-6 mt-2">
+                            <strong>Stock:</strong>
+                            {% if product.stock > 0 %}
+                                <span class="text-success">{{ product.stock }} disponible(s)</span>
+                            {% else %}
+                                <span class="text-danger">Rupture de stock</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-6 mt-2">
+                            <strong>Ajouté le:</strong> {{ product.createdAt|date('d/m/Y') }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Form -->
+                {% if app.user %}
+                    {% if product.stock > 0 %}
+                        <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}" class="mb-4">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-auto">
+                                    <label for="quantity" class="form-label">Quantité</label>
+                                    <select class="form-select" id="quantity" name="quantity" style="width: 80px;">
+                                        {% for i in 1..min(5, product.stock) %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-cart-plus me-2"></i>Ajouter au Panier
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Ce produit est actuellement en rupture de stock.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a> pour ajouter ce produit à votre panier.
+                    </div>
+                {% endif %}
+
+                <!-- Product Features -->
+                <div class="mt-5">
+                    <h5>Caractéristiques</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Mouvement automatique suisse</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Boîtier en acier inoxydable</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Verre saphir anti-reflet</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Étanchéité 100m</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Garantie internationale 2 ans</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

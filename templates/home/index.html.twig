@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - WatchStore{% endblock %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Collection Exclusive de Montres de Luxe</h1>
+            <p class="lead mb-4">Découvrez notre sélection des plus prestigieuses marques horlogères mondiales</p>
+            <a href="{{ path('app_product_index') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-eye me-2"></i>Découvrir la Collection
+            </a>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Nos Dernières Arrivées</h2>
+                <p class="lead text-muted">Les montres les plus récentes de notre collection</p>
+            </div>
+
+            <div class="row g-4">
+                {% for product in products %}
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card product-card h-100 shadow-sm">
+                            {% if product.image %}
+                                <img src="{{ asset('uploads/images/' ~ product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 250px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                                    <i class="fas fa-clock fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text text-muted small">{{ product.brand }} - {{ product.model }}</p>
+                                <p class="card-text flex-grow-1">{{ product.description|length > 100 ? product.description|slice(0, 100) ~ '...' : product.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <span class="h5 text-primary mb-0">{{ product.price|number_format(2, ',', ' ') }} €</span>
+                                    <small class="text-muted">Stock: {{ product.stock }}</small>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-outline-primary flex-fill">
+                                        <i class="fas fa-eye me-1"></i>Voir
+                                    </a>
+                                    {% if app.user and product.stock > 0 %}
+                                        <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}" class="flex-fill">
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="fas fa-cart-plus me-1"></i>Ajouter
+                                            </button>
+                                        </form>
+                                    {% elseif product.stock == 0 %}
+                                        <button class="btn btn-secondary flex-fill" disabled>
+                                            <i class="fas fa-times me-1"></i>Rupture
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{{ path('app_product_index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>Voir Tous les Produits
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-shipping-fast fa-3x text-primary"></i>
+                    </div>
+                    <h4>Livraison Gratuite</h4>
+                    <p class="text-muted">Livraison gratuite pour toute commande supérieure à 500€</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                    </div>
+                    <h4>Garantie Authentique</h4>
+                    <p class="text-muted">Toutes nos montres sont garanties authentiques avec certificat</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-headset fa-3x text-primary"></i>
+                    </div>
+                    <h4>Support 24/7</h4>
+                    <p class="text-muted">Notre équipe d'experts est disponible pour vous conseiller</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

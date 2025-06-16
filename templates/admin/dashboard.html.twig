@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - WatchStore{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</h1>
+            <span class="badge bg-success">Administrateur</span>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4>{{ total_products }}</h4>
+                                <p class="mb-0">Produits Total</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4>{{ active_products }}</h4>
+                                <p class="mb-0">Produits Actifs</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4>{{ total_orders }}</h4>
+                                <p class="mb-0">Commandes Total</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-shopping-bag fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4>{{ (total_products - active_products) }}</h4>
+                                <p class="mb-0">Produits Inactifs</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-pause-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Actions Rapides</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('app_admin_product_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Ajouter un Produit
+                            </a>
+                            <a href="{{ path('app_admin_products') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>Gérer les Produits
+                            </a>
+                            <a href="{{ path('app_admin_orders') }}" class="btn btn-outline-info">
+                                <i class="fas fa-shopping-bag me-2"></i>Voir les Commandes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Commandes Récentes</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_orders is empty %}
+                            <p class="text-muted">Aucune commande récente</p>
+                        {% else %}
+                            {% for order in recent_orders %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>#{{ order.id }}</strong>
+                                        <small class="text-muted d-block">{{ order.user.firstName }} {{ order.user.lastName }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                                        <small class="text-muted d-block">{{ order.createdAt|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<hr class="my-2">{% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
