@@ -3,416 +3,378 @@
 {% block title %}Gestion des Commandes - Administration{% endblock %}
 
 {% block body %}
-    <div class="container-fluid py-4">
-        <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="display-6 fw-light mb-0">
-                    <i class="fas fa-shopping-bag me-2 text-primary"></i>
-                    Gestion des Commandes
-                </h1>
-                <p class="text-muted mb-0">Gérer et suivre toutes les commandes</p>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-success" onclick="exportOrders()">
-                    <i class="fas fa-download me-2"></i>Exporter
-                </button>
-                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Tableau de bord
-                </a>
+    <!-- Admin Header -->
+    <section class="py-4 bg-dark text-white">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="display-6 fw-light mb-1">Gestion des commandes</h1>
+                    <p class="mb-0 text-light">{{ orders|length }} commande(s) au total</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light" onclick="exportOrders()">
+                        <i class="fas fa-download me-2"></i>Exporter
+                    </button>
+                    <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Tableau de bord
+                    </a>
+                </div>
             </div>
         </div>
+    </section>
 
+    <div class="container py-5">
         <!-- Quick Stats -->
         <div class="row g-4 mb-4">
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
-                                <i class="fas fa-shopping-cart text-primary"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Total Commandes</h6>
-                                <h4 class="mb-0 fw-bold">{{ orders|length }}</h4>
-                            </div>
+            <div class="col-md-3">
+                <div class="bg-white shadow-sm rounded p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                            <i class="fas fa-shopping-cart text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total</h6>
+                            <h4 class="mb-0 fw-bold">{{ orders|length }}</h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-warning bg-opacity-10 rounded-3 p-2 me-3">
-                                <i class="fas fa-clock text-warning"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">En Attente</h6>
-                                <h4 class="mb-0 fw-bold">
-                                    {% set pendingCount = 0 %}
-                                    {% for order in orders %}
-                                        {% if order.status == 'pending' %}
-                                            {% set pendingCount = pendingCount + 1 %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {{ pendingCount }}
-                                </h4>
-                            </div>
+            <div class="col-md-3">
+                <div class="bg-white shadow-sm rounded p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 rounded p-2 me-3">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">En Attente</h6>
+                            <h4 class="mb-0 fw-bold">
+                                {% set pendingCount = 0 %}
+                                {% for order in orders %}
+                                    {% if order.status == 'pending' %}
+                                        {% set pendingCount = pendingCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ pendingCount }}
+                            </h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-success bg-opacity-10 rounded-3 p-2 me-3">
-                                <i class="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Livrées</h6>
-                                <h4 class="mb-0 fw-bold">
-                                    {% set deliveredCount = 0 %}
-                                    {% for order in orders %}
-                                        {% if order.status == 'delivered' %}
-                                            {% set deliveredCount = deliveredCount + 1 %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {{ deliveredCount }}
-                                </h4>
-                            </div>
+            <div class="col-md-3">
+                <div class="bg-white shadow-sm rounded p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 rounded p-2 me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Livrées</h6>
+                            <h4 class="mb-0 fw-bold">
+                                {% set deliveredCount = 0 %}
+                                {% for order in orders %}
+                                    {% if order.status == 'delivered' %}
+                                        {% set deliveredCount = deliveredCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ deliveredCount }}
+                            </h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-info bg-opacity-10 rounded-3 p-2 me-3">
-                                <i class="fas fa-chart-line text-info"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Chiffre d'affaires</h6>
-                                <h4 class="mb-0 fw-bold">
-                                    {% set totalRevenue = 0 %}
-                                    {% for order in orders %}
-                                        {% if order.status != 'cancelled' %}
-                                            {% set totalRevenue = totalRevenue + order.total %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {{ totalRevenue|number_format(0, ',', ' ') }} DT
-                                </h4>
-                            </div>
+            <div class="col-md-3">
+                <div class="bg-white shadow-sm rounded p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 rounded p-2 me-3">
+                            <i class="fas fa-chart-line text-info"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Chiffre d'affaires</h6>
+                            <h4 class="mb-0 fw-bold">
+                                {% set totalRevenue = 0 %}
+                                {% for order in orders %}
+                                    {% if order.status != 'cancelled' %}
+                                        {% set totalRevenue = totalRevenue + order.total %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ totalRevenue|number_format(0, ',', ' ') }} DT
+                            </h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filters & Search -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label fw-600">Rechercher</label>
-                        <div class="input-group">
+        <!-- Filters -->
+        <div class="bg-white shadow-sm rounded mb-4 p-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
                         <span class="input-group-text">
                             <i class="fas fa-search"></i>
                         </span>
-                            <input type="text" class="form-control" id="searchInput" placeholder="ID, client, email...">
-                        </div>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher par ID, client, email...">
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-600">Statut</label>
-                        <select class="form-select" id="statusFilter">
-                            <option value="">Tous les statuts</option>
-                            <option value="pending">En attente</option>
-                            <option value="processing">En cours</option>
-                            <option value="shipped">Expédiée</option>
-                            <option value="delivered">Livrée</option>
-                            <option value="cancelled">Annulée</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-600">Période</label>
-                        <select class="form-select" id="dateFilter">
-                            <option value="">Toutes les dates</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="month">Ce mois</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-600">Actions en lot</label>
-                        <div class="d-flex gap-2">
-                            <select class="form-select" id="bulkAction">
-                                <option value="">Sélectionner une action</option>
-                                <option value="processing">Marquer en cours</option>
-                                <option value="shipped">Marquer expédiée</option>
-                                <option value="delivered">Marquer livrée</option>
-                            </select>
-                            <button class="btn btn-outline-primary" onclick="applyBulkAction()">
-                                <i class="fas fa-check"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-600">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                                <i class="fas fa-undo me-1"></i>Reset
-                            </button>
-                        </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="pending">En attente</option>
+                        <option value="processing">En cours</option>
+                        <option value="shipped">Expédiée</option>
+                        <option value="delivered">Livrée</option>
+                        <option value="cancelled">Annulée</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="dateFilter">
+                        <option value="">Toutes les dates</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="bulkAction">
+                        <option value="">Actions en lot</option>
+                        <option value="processing">Marquer en cours</option>
+                        <option value="shipped">Marquer expédiée</option>
+                        <option value="delivered">Marquer livrée</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="applyBulkAction()">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                            <i class="fas fa-undo"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Orders Table -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-600">Liste des commandes</h5>
-                    <div class="d-flex align-items-center gap-2">
-                        <small class="text-muted">
-                            <span id="resultCount">{{ orders|length }}</span> commande(s)
-                        </small>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAll">
-                            <label class="form-check-label" for="selectAll">
-                                Tout sélectionner
-                            </label>
-                        </div>
-                    </div>
+        <div class="bg-white shadow-sm rounded">
+            {% if orders is empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-bag fa-4x text-muted mb-4"></i>
+                    <h3 class="fw-light">Aucune commande trouvée</h3>
+                    <p class="text-muted mb-4">Les commandes apparaîtront ici une fois passées</p>
                 </div>
-            </div>
-            <div class="card-body p-0">
-                {% if orders is empty %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Aucune commande</h5>
-                        <p class="text-muted mb-0">Aucune commande n'a été passée pour le moment</p>
-                    </div>
-                {% else %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="ordersTable">
-                            <thead class="table-light">
-                            <tr>
-                                <th class="border-0">
-                                    <input type="checkbox" class="form-check-input" id="selectAllHeader">
-                                </th>
-                                <th class="border-0 fw-600">Commande</th>
-                                <th class="border-0 fw-600">Client</th>
-                                <th class="border-0 fw-600">Date</th>
-                                <th class="border-0 fw-600">Articles</th>
-                                <th class="border-0 fw-600">Total</th>
-                                <th class="border-0 fw-600">Statut</th>
-                                <th class="border-0 fw-600">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for order in orders %}
-                                <tr class="order-row" data-order-id="{{ order.id }}" data-status="{{ order.status }}" data-date="{{ order.createdAt|date('Y-m-d') }}">
-                                    <td>
-                                        <input type="checkbox" class="form-check-input order-checkbox" value="{{ order.id }}">
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                                <i class="fas fa-receipt text-primary"></i>
-                                            </div>
-                                            <strong>#{{ order.id }}</strong>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="ordersTable">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input" id="selectAllHeader">
+                            </th>
+                            <th>Commande</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Articles</th>
+                            <th>Total</th>
+                            <th>Statut</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for order in orders %}
+                            <tr class="order-row" data-order-id="{{ order.id }}" data-status="{{ order.status }}" data-date="{{ order.createdAt|date('Y-m-d') }}">
+                                <td>
+                                    <input type="checkbox" class="form-check-input order-checkbox" value="{{ order.id }}">
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-receipt text-primary"></i>
                                         </div>
-                                    </td>
-                                    <td>
                                         <div>
-                                            <div class="fw-600">{{ order.user.firstName }} {{ order.user.lastName }}</div>
-                                            <small class="text-muted">{{ order.user.email }}</small>
+                                            <div class="fw-600">#{{ order.id }}</div>
+                                            <small class="text-muted">{{ order.createdAt|date('H:i') }}</small>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div>{{ order.createdAt|date('d/m/Y') }}</div>
-                                        <small class="text-muted">{{ order.createdAt|date('H:i') }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info bg-opacity-10 text-info">
-                                            {{ order.orderItems|length }} article(s)
-                                        </span>
-                                    </td>
-                                    <td class="fw-600">{{ order.total|number_format(0, ',', ' ') }} DT</td>
-                                    <td>
-                                        {% set statusClass = {
-                                            'pending': 'warning',
-                                            'processing': 'info',
-                                            'shipped': 'primary',
-                                            'delivered': 'success',
-                                            'cancelled': 'danger'
-                                        } %}
-                                        {% set statusText = {
-                                            'pending': 'En attente',
-                                            'processing': 'En cours',
-                                            'shipped': 'Expédiée',
-                                            'delivered': 'Livrée',
-                                            'cancelled': 'Annulée'
-                                        } %}
-                                        <span class="badge bg-{{ statusClass[order.status] ?? 'secondary' }}">
-                                            {{ statusText[order.status] ?? order.status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex gap-1">
-                                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">
-                                                <i class="fas fa-eye"></i>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-600">{{ order.user.firstName }} {{ order.user.lastName }}</div>
+                                        <small class="text-muted">{{ order.user.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ order.createdAt|date('d/m/Y') }}</small>
+                                </td>
+                                <td>
+                                    {% if order.orderItems|length > 5 %}
+                                        <span class="badge bg-warning text-dark fs-6">{{ order.orderItems|length }}</span>
+                                    {% elseif order.orderItems|length > 0 %}
+                                        <span class="badge bg-info fs-6">{{ order.orderItems|length }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary fs-6">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-600">{{ order.total|number_format(0, ',', ' ') }} DT</td>
+                                <td>
+                                    {% set statusClass = {
+                                        'pending': 'warning',
+                                        'processing': 'info',
+                                        'shipped': 'primary',
+                                        'delivered': 'success',
+                                        'cancelled': 'danger'
+                                    } %}
+                                    {% set statusText = {
+                                        'pending': 'En attente',
+                                        'processing': 'En cours',
+                                        'shipped': 'Expédiée',
+                                        'delivered': 'Livrée',
+                                        'cancelled': 'Annulée'
+                                    } %}
+                                    {% if order.status == 'delivered' %}
+                                        <span class="badge bg-success">{{ statusText[order.status] }}</span>
+                                    {% elseif order.status == 'cancelled' %}
+                                        <span class="badge bg-danger">{{ statusText[order.status] }}</span>
+                                    {% else %}
+                                        <span class="badge bg-{{ statusClass[order.status] ?? 'secondary' }}">{{ statusText[order.status] ?? order.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Modifier">
+                                                <i class="fas fa-edit"></i>
                                             </button>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'processing')">
-                                                            <i class="fas fa-play me-2 text-info"></i>En cours
-                                                        </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'shipped')">
-                                                            <i class="fas fa-truck me-2 text-primary"></i>Expédiée
-                                                        </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'delivered')">
-                                                            <i class="fas fa-check me-2 text-success"></i>Livrée
-                                                        </a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item text-danger" href="#" onclick="updateOrderStatus({{ order.id }}, 'cancelled')">
-                                                            <i class="fas fa-times me-2"></i>Annuler
-                                                        </a></li>
-                                                </ul>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'processing')">
+                                                        <i class="fas fa-play me-2 text-info"></i>En cours
+                                                    </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'shipped')">
+                                                        <i class="fas fa-truck me-2 text-primary"></i>Expédiée
+                                                    </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ order.id }}, 'delivered')">
+                                                        <i class="fas fa-check me-2 text-success"></i>Livrée
+                                                    </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="updateOrderStatus({{ order.id }}, 'cancelled')">
+                                                        <i class="fas fa-times me-2"></i>Annuler
+                                                    </a></li>
+                                            </ul>
+                                        </div>
+                                        <form method="post" action="{{ path('app_admin_order_delete', {id: order.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                                            <button class="btn btn-outline-danger" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Modal pour les détails de la commande -->
+                            <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-receipt me-2"></i>
+                                                Commande #{{ order.id }}
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row g-4 mb-4">
+                                                <div class="col-md-6">
+                                                    <div class="bg-light rounded p-3">
+                                                        <h6 class="fw-600 mb-3">
+                                                            <i class="fas fa-user me-2 text-primary"></i>
+                                                            Informations client
+                                                        </h6>
+                                                        <p class="mb-2"><strong>{{ order.user.firstName }} {{ order.user.lastName }}</strong></p>
+                                                        <p class="mb-2 text-muted">{{ order.user.email }}</p>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            {{ order.createdAt|date('d/m/Y à H:i') }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="bg-light rounded p-3">
+                                                        <h6 class="fw-600 mb-3">
+                                                            <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                                                            Adresse de livraison
+                                                        </h6>
+                                                        <p class="mb-0">{{ order.shippingAddress|nl2br }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <h6 class="fw-600 mb-3">
+                                                <i class="fas fa-box me-2 text-primary"></i>
+                                                Articles commandés
+                                            </h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead class="table-light">
+                                                    <tr>
+                                                        <th class="border-0">Produit</th>
+                                                        <th class="border-0">Prix unitaire</th>
+                                                        <th class="border-0">Quantité</th>
+                                                        <th class="border-0">Total</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% for item in order.orderItems %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="d-flex align-items-center">
+                                                                    {% if item.product.image %}
+                                                                        <img src="{{ asset('uploads/images/' ~ item.product.image) }}" class="rounded me-2" width="40" height="40" style="object-fit: cover;">
+                                                                    {% else %}
+                                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                                                            <i class="fas fa-clock text-muted"></i>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                    <div>
+                                                                        <div class="fw-600">{{ item.product.name }}</div>
+                                                                        <small class="text-muted">{{ item.product.brand ?? 'N/A' }}</small>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{ item.price|number_format(0, ',', ' ') }} DT</td>
+                                                            <td>
+                                                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ item.quantity }}</span>
+                                                            </td>
+                                                            <td class="fw-600">{{ (item.price * item.quantity)|number_format(0, ',', ' ') }} DT</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="bg-primary bg-opacity-5 rounded p-3 mt-3">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0 fw-600">Total de la commande</h5>
+                                                    <h4 class="mb-0 fw-bold text-primary">{{ order.total|number_format(0, ',', ' ') }} DT</h4>
+                                                </div>
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Modal pour les détails de la commande -->
-                                <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-xl">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title">
-                                                    <i class="fas fa-receipt me-2"></i>
-                                                    Commande #{{ order.id }}
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row g-4 mb-4">
-                                                    <div class="col-md-6">
-                                                        <div class="bg-light rounded p-3">
-                                                            <h6 class="fw-600 mb-3">
-                                                                <i class="fas fa-user me-2 text-primary"></i>
-                                                                Informations client
-                                                            </h6>
-                                                            <p class="mb-2"><strong>{{ order.user.firstName }} {{ order.user.lastName }}</strong></p>
-                                                            <p class="mb-2 text-muted">{{ order.user.email }}</p>
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-calendar me-1"></i>
-                                                                {{ order.createdAt|date('d/m/Y à H:i') }}
-                                                            </small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="bg-light rounded p-3">
-                                                            <h6 class="fw-600 mb-3">
-                                                                <i class="fas fa-shipping-fast me-2 text-primary"></i>
-                                                                Adresse de livraison
-                                                            </h6>
-                                                            <p class="mb-0">{{ order.shippingAddress|nl2br }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <h6 class="fw-600 mb-3">
-                                                    <i class="fas fa-box me-2 text-primary"></i>
-                                                    Articles commandés
-                                                </h6>
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover">
-                                                        <thead class="table-light">
-                                                        <tr>
-                                                            <th class="border-0">Produit</th>
-                                                            <th class="border-0">Prix unitaire</th>
-                                                            <th class="border-0">Quantité</th>
-                                                            <th class="border-0">Total</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        {% for item in order.orderItems %}
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        {% if item.product.image %}
-                                                                            <img src="{{ asset('uploads/images/' ~ item.product.image) }}" class="rounded me-2" width="40" height="40" style="object-fit: cover;">
-                                                                        {% else %}
-                                                                            <div class="bg-light rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                                                                <i class="fas fa-clock text-muted"></i>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                        <div>
-                                                                            <div class="fw-600">{{ item.product.name }}</div>
-                                                                            <small class="text-muted">{{ item.product.brand ?? 'N/A' }}</small>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>{{ item.price|number_format(0, ',', ' ') }} DT</td>
-                                                                <td>
-                                                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{ item.quantity }}</span>
-                                                                </td>
-                                                                <td class="fw-600">{{ (item.price * item.quantity)|number_format(0, ',', ' ') }} DT</td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-
-                                                <div class="bg-primary bg-opacity-5 rounded p-3 mt-3">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <h5 class="mb-0 fw-600">Total de la commande</h5>
-                                                        <h4 class="mb-0 fw-bold text-primary">{{ order.total|number_format(0, ',', ' ') }} DT</h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                <button type="button" class="btn btn-primary" onclick="printOrder({{ order.id }})">
-                                                    <i class="fas fa-print me-2"></i>Imprimer
-                                                </button>
-                                            </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                            <button type="button" class="btn btn-primary" onclick="printOrder({{ order.id }})">
+                                                <i class="fas fa-print me-2"></i>Imprimer
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Pagination (si nécessaire) -->
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <div class="text-muted">
-                Affichage de <span id="showingFrom">1</span> à <span id="showingTo">{{ orders|length }}</span> sur <span id="totalResults">{{ orders|length }}</span> résultats
-            </div>
-            <nav>
-                <ul class="pagination mb-0">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
-                    </li>
-                    <li class="page-item active">
-                        <a class="page-link" href="#">1</a>
-                    </li>
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#">Suivant</a>
-                    </li>
-                </ul>
-            </nav>
+                            </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -431,8 +393,8 @@
                 let visibleCount = 0;
 
                 orderRows.forEach(row => {
-                    const orderId = row.querySelector('strong').textContent.toLowerCase();
-                    const clientName = row.querySelector('.fw-600').textContent.toLowerCase();
+                    const orderId = row.querySelector('.fw-600').textContent.toLowerCase();
+                    const clientName = row.querySelectorAll('.fw-600')[1].textContent.toLowerCase();
                     const clientEmail = row.querySelector('.text-muted').textContent.toLowerCase();
                     const status = row.dataset.status;
                     const orderDate = new Date(row.dataset.date);
@@ -469,10 +431,6 @@
                     row.style.display = showRow ? '' : 'none';
                     if (showRow) visibleCount++;
                 });
-
-                document.getElementById('resultCount').textContent = visibleCount;
-                document.getElementById('showingTo').textContent = visibleCount;
-                document.getElementById('totalResults').textContent = visibleCount;
             }
 
             searchInput.addEventListener('input', filterOrders);
@@ -480,32 +438,21 @@
             dateFilter.addEventListener('change', filterOrders);
 
             // Select all functionality
-            const selectAll = document.getElementById('selectAll');
             const selectAllHeader = document.getElementById('selectAllHeader');
             const orderCheckboxes = document.querySelectorAll('.order-checkbox');
-
-            function updateSelectAll() {
-                const visibleCheckboxes = Array.from(orderCheckboxes).filter(cb => cb.closest('.order-row').style.display !== 'none');
-                const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
-
-                selectAll.checked = selectAllHeader.checked = checkedCount === visibleCheckboxes.length && visibleCheckboxes.length > 0;
-                selectAll.indeterminate = selectAllHeader.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
-            }
-
-            selectAll.addEventListener('change', function() {
-                const visibleCheckboxes = Array.from(orderCheckboxes).filter(cb => cb.closest('.order-row').style.display !== 'none');
-                visibleCheckboxes.forEach(cb => cb.checked = this.checked);
-                selectAllHeader.checked = this.checked;
-            });
 
             selectAllHeader.addEventListener('change', function() {
                 const visibleCheckboxes = Array.from(orderCheckboxes).filter(cb => cb.closest('.order-row').style.display !== 'none');
                 visibleCheckboxes.forEach(cb => cb.checked = this.checked);
-                selectAll.checked = this.checked;
             });
 
             orderCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateSelectAll);
+                cb.addEventListener('change', function() {
+                    const visibleCheckboxes = Array.from(orderCheckboxes).filter(cb => cb.closest('.order-row').style.display !== 'none');
+                    const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+                    selectAllHeader.checked = checkedCount === visibleCheckboxes.length && visibleCheckboxes.length > 0;
+                    selectAllHeader.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
+                });
             });
         });
 
@@ -515,15 +462,11 @@
             document.getElementById('statusFilter').value = '';
             document.getElementById('dateFilter').value = '';
             document.querySelectorAll('.order-row').forEach(row => row.style.display = '');
-            document.getElementById('resultCount').textContent = {{ orders|length }};
-            document.getElementById('showingTo').textContent = {{ orders|length }};
-            document.getElementById('totalResults').textContent = {{ orders|length }};
         }
 
         // Update order status
         function updateOrderStatus(orderId, newStatus) {
             if (confirm('Êtes-vous sûr de vouloir changer le statut de cette commande ?')) {
-                // Ici vous pouvez faire un appel AJAX pour mettre à jour le statut
                 fetch(`/admin/orders/${orderId}/status`, {
                     method: 'POST',
                     headers: {
@@ -558,11 +501,26 @@
             }
 
             if (confirm(`Êtes-vous sûr de vouloir appliquer cette action à ${selectedOrders.length} commande(s) ?`)) {
-                // Ici vous pouvez faire un appel AJAX pour les actions en lot
-                console.log('Bulk action:', action, 'Orders:', selectedOrders);
-                // Simuler le succès
-                alert('Action appliquée avec succès');
-                location.reload();
+                fetch('/admin/orders/bulk-update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ orderIds: selectedOrders, action: action })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Erreur lors de l\'application de l\'action');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Erreur lors de l\'application de l\'action');
+                    });
             }
         }
 
@@ -573,9 +531,7 @@
                 alert('Aucune commande à exporter');
                 return;
             }
-
-            // Ici vous pouvez implémenter l'export (CSV, Excel, PDF)
-            alert('Export en cours... (fonctionnalité à implémenter)');
+            window.location.href = '/admin/orders/export';
         }
 
         // Print order
@@ -601,22 +557,6 @@
             background-color: rgba(0, 123, 255, 0.05);
         }
 
-        .card {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .card:hover {
-            transform: translateY(-1px);
-        }
-
-        .order-row {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .order-row:hover {
-            background-color: rgba(0, 123, 255, 0.02);
-        }
-
         .dropdown-menu {
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
@@ -626,7 +566,7 @@
                 font-size: 0.875rem;
             }
 
-            .btn-sm {
+            .btn-group-sm .btn {
                 padding: 0.25rem 0.5rem;
                 font-size: 0.75rem;
             }
