@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande #{{ order.id }} - ENZO Collection{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-light mb-0">Commande #{{ order.id }}</h1>
+                <p class="text-muted mb-0">Passée le {{ order.createdAt|date('d/m/Y à H:i') }}</p>
+            </div>
+            <div>
+                <a href="{{ path('app_admin_orders') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+                <a href="{{ path('app_admin_order_edit', {id: order.id}) }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Modifier le statut
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Order Summary -->
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                            Articles commandés
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th class="border-0 fw-600">Produit</th>
+                                    <th class="border-0 fw-600 text-center">Quantité</th>
+                                    <th class="border-0 fw-600 text-end">Prix unitaire</th>
+                                    <th class="border-0 fw-600 text-end">Sous-total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in order.orderItems %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center">
+                                                {% if item.product.image %}
+                                                    <img src="{{ asset('uploads/images/' ~ item.product.image) }}" width="60" height="60" class="rounded me-3" style="object-fit: cover;">
+
+                                                {% else %}
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center me-3"
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-1 fw-600">{{ item.product.name }}</h6>
+                                                    <small class="text-muted">{{ item.product.brand }} - {{ item.product.model }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge bg-light text-dark px-3 py-2">{{ item.quantity }}</span>
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <span class="fw-600">{{ item.price|number_format(2, ',', ' ') }} €</span>
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <span class="fw-600 text-primary">{{ item.subTotal|number_format(2, ',', ' ') }} €</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-600 border-0">Total de la commande:</td>
+                                    <td class="text-end fw-600 border-0">
+                                        <span class="h5 text-primary mb-0">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="col-xl-4">
+                <!-- Status Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            Statut de la commande
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% set status_class = {
+                            'pending': 'warning',
+                            'processing': 'info',
+                            'shipped': 'primary',
+                            'delivered': 'success',
+                            'cancelled': 'danger'
+                        } %}
+                        {% set status_text = {
+                            'pending': 'En attente',
+                            'processing': 'En cours de traitement',
+                            'shipped': 'Expédiée',
+                            'delivered': 'Livrée',
+                            'cancelled': 'Annulée'
+                        } %}
+                        <div class="text-center">
+                            <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-4 py-3 fs-6">
+                                {{ status_text[order.status] ?? order.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            Informations client
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-600">{{ order.user.firstName }} {{ order.user.lastName }}</h6>
+                                <small class="text-muted">{{ order.user.email }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Addresses -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            Adresses
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="fw-600 mb-2">
+                                <i class="fas fa-truck me-2 text-success"></i>
+                                Adresse de livraison
+                            </h6>
+                            <p class="text-muted mb-0">{{ order.shippingAddress }}</p>
+                        </div>
+                        <hr>
+                        <div>
+                            <h6 class="fw-600 mb-2">
+                                <i class="fas fa-file-invoice me-2 text-info"></i>
+                                Adresse de facturation
+                            </h6>
+                            <p class="text-muted mb-0">{{ order.billingAddress }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+{% endblock %}

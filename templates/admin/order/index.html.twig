@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Commandes - ENZO Collection{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-light mb-0">Gestion des Commandes</h1>
+                <p class="text-muted mb-0">{{ total_orders }} commande(s) au total</p>
+            </div>
+            <div>
+                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+
+        <!-- Status Filter Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if not current_status %}bg-primary text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Toutes</h6>
+                            <h4 class="mb-0">{{ total_orders }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders', {status: 'pending'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_status == 'pending' %}bg-warning text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">En attente</h6>
+                            <h4 class="mb-0">{{ status_counts.pending }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders', {status: 'processing'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_status == 'processing' %}bg-info text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">En cours</h6>
+                            <h4 class="mb-0">{{ status_counts.processing }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders', {status: 'shipped'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_status == 'shipped' %}bg-primary text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Expédiées</h6>
+                            <h4 class="mb-0">{{ status_counts.shipped }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders', {status: 'delivered'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_status == 'delivered' %}bg-success text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Livrées</h6>
+                            <h4 class="mb-0">{{ status_counts.delivered }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_orders', {status: 'cancelled'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_status == 'cancelled' %}bg-danger text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Annulées</h6>
+                            <h4 class="mb-0">{{ status_counts.cancelled }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-600">
+                    <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                    Liste des Commandes
+                    {% if current_status %}
+                        - {{ current_status|title }}
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if orders is empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune commande trouvée</h5>
+                        <p class="text-muted mb-0">
+                            {% if current_status %}
+                                Aucune commande avec le statut "{{ current_status }}"
+                            {% else %}
+                                Aucune commande n'a été passée pour le moment
+                            {% endif %}
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="border-0 fw-600">Commande</th>
+                                <th class="border-0 fw-600">Client</th>
+                                <th class="border-0 fw-600">Date</th>
+                                <th class="border-0 fw-600">Statut</th>
+                                <th class="border-0 fw-600">Total</th>
+                                <th class="border-0 fw-600 text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
+                                                <i class="fas fa-receipt text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-600">#{{ order.id }}</h6>
+                                                <small class="text-muted">{{ order.orderItems|length }} article(s)</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div>
+                                            <h6 class="mb-0">{{ order.user.firstName }} {{ order.user.lastName }}</h6>
+                                            <small class="text-muted">{{ order.user.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div>
+                                            <div class="fw-600">{{ order.createdAt|date('d/m/Y') }}</div>
+                                            <small class="text-muted">{{ order.createdAt|date('H:i') }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        {% set status_class = {
+                                            'pending': 'warning',
+                                            'processing': 'info',
+                                            'shipped': 'primary',
+                                            'delivered': 'success',
+                                            'cancelled': 'danger'
+                                        } %}
+                                        <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-3 py-2">
+                                                {{ order.status|title }}
+                                            </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="fw-600 text-primary">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                                    </td>
+                                    <td class="align-middle text-end">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ path('app_admin_order_show', {id: order.id}) }}"
+                                               class="btn btn-outline-primary btn-sm" title="Voir">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('app_admin_order_edit', {id: order.id}) }}"
+                                               class="btn btn-outline-secondary btn-sm" title="Modifier le statut">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+            <nav aria-label="Navigation des commandes" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('app_admin_orders', {page: current_page - 1, status: current_status}) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page in 1..total_pages %}
+                        <li class="page-item {% if page == current_page %}active{% endif %}">
+                            <a class="page-link" href="{{ path('app_admin_orders', {page: page, status: current_status}) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('app_admin_orders', {page: current_page + 1, status: current_status}) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+
+    <style>
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+{% endblock %}

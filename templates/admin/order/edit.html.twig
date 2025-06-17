@@ -1,0 +1,166 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Commande #{{ order.id }} - ENZO Collection{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-light mb-0">Modifier Commande #{{ order.id }}</h1>
+                <p class="text-muted mb-0">Passée le {{ order.createdAt|date('d/m/Y à H:i') }}</p>
+            </div>
+            <div>
+                <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <!-- Edit Form -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-edit me-2 text-primary"></i>
+                            Modifier le statut
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="status" class="form-label fw-600">Statut de la commande</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>En attente</option>
+                                        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>En cours de traitement</option>
+                                        <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Expédiée</option>
+                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Livrée</option>
+                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Annulée</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Seul le statut de la commande peut être modifié
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary me-2">
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Enregistrer le statut
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <!-- Current Status -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            Statut actuel
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% set status_class = {
+                            'pending': 'warning',
+                            'processing': 'info',
+                            'shipped': 'primary',
+                            'delivered': 'success',
+                            'cancelled': 'danger'
+                        } %}
+                        {% set status_text = {
+                            'pending': 'En attente',
+                            'processing': 'En cours de traitement',
+                            'shipped': 'Expédiée',
+                            'delivered': 'Livrée',
+                            'cancelled': 'Annulée'
+                        } %}
+                        <div class="text-center">
+                            <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-4 py-3 fs-6">
+                                {{ status_text[order.status] ?? order.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                            Résumé de la commande
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Articles:</span>
+                            <span class="fw-600">{{ order.orderItems|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Client:</span>
+                            <span class="fw-600">{{ order.user.firstName }} {{ order.user.lastName }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Date:</span>
+                            <span class="fw-600">{{ order.createdAt|date('d/m/Y') }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-600">Total:</span>
+                            <span class="fw-600 text-primary h5 mb-0">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Addresses (Read-only) -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            Adresses
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="fw-600 mb-2">
+                                <i class="fas fa-truck me-2 text-success"></i>
+                                Adresse de livraison
+                            </h6>
+                            <p class="text-muted mb-0 small">{{ order.shippingAddress }}</p>
+                        </div>
+                        <hr>
+                        <div>
+                            <h6 class="fw-600 mb-2">
+                                <i class="fas fa-file-invoice me-2 text-info"></i>
+                                Adresse de facturation
+                            </h6>
+                            <p class="text-muted mb-0 small">{{ order.billingAddress }}</p>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="fas fa-lock me-2"></i>
+                            <small>Les adresses ne peuvent pas être modifiées</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+{% endblock %}

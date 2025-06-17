@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Form\ProductType;
-use App\Repository\ProductRepository;
 use App\Repository\OrderRepository;
+use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -140,13 +140,5 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_products');
     }
 
-    #[Route('/orders', name: 'app_admin_orders')]
-    public function orders(OrderRepository $orderRepository): Response
-    {
-        $orders = $orderRepository->findBy([], ['createdAt' => 'DESC']);
 
-        return $this->render('admin/orders/index.html.twig', [
-            'orders' => $orders,
-        ]);
-    }
 }
