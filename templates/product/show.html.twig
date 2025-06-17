@@ -1,13 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ product.name }} - WatchStore{% endblock %}
+{% block title %}{{ product.name }} - ENZO Collection{% endblock %}
 
 {% block body %}
     <div class="container py-5">
-        <nav aria-label="breadcrumb">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
-                <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}">Produits</a></li>
+                <li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}" class="text-decoration-none">Montres</a></li>
                 <li class="breadcrumb-item active">{{ product.name }}</li>
             </ol>
         </nav>
@@ -15,75 +16,103 @@
         <div class="row g-5">
             <!-- Product Image -->
             <div class="col-lg-6">
-                {% if product.image %}
-                    <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid rounded shadow" alt="{{ product.name }}">
-                {% else %}
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center shadow" style="height: 500px;">
-                        <i class="fas fa-clock fa-5x text-muted"></i>
-                    </div>
-                {% endif %}
+                <div class="position-relative">
+                    {% if product.image %}
+                        <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid w-100 shadow-lg" alt="{{ product.name }}" style="border-radius: 8px;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center shadow-lg" style="height: 600px; border-radius: 8px;">
+                            <i class="fas fa-clock fa-5x text-muted"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- Stock Badge -->
+                    {% if product.stock <= 5 and product.stock > 0 %}
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-warning text-dark fs-6">Dernières pièces</span>
+                        </div>
+                    {% elseif product.stock == 0 %}
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-danger fs-6">Rupture de stock</span>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Product Details -->
             <div class="col-lg-6">
                 <div class="mb-3">
-                    <span class="badge bg-primary">{{ product.brand }}</span>
+                    <span class="badge bg-dark text-uppercase">{{ product.brand }}</span>
                 </div>
 
-                <h1 class="display-5 fw-bold mb-3">{{ product.name }}</h1>
+                <h1 class="display-5 fw-light mb-3">{{ product.name }}</h1>
                 <p class="text-muted fs-5 mb-4">{{ product.model }}</p>
 
                 <div class="mb-4">
-                    <span class="display-6 text-primary fw-bold">{{ product.price|number_format(2, ',', ' ') }} €</span>
+                    <span class="display-6 fw-bold text-dark">{{ product.price|number_format(0, ',', ' ') }} DT</span>
                 </div>
 
                 <div class="mb-4">
-                    <h5>Description</h5>
-                    <p class="text-muted">{{ product.description }}</p>
+                    <h5 class="fw-600 mb-3">Description</h5>
+                    <p class="text-muted lh-lg">{{ product.description }}</p>
                 </div>
 
+                <!-- Product Specifications -->
                 <div class="mb-4">
-                    <div class="row">
+                    <h5 class="fw-600 mb-3">Spécifications</h5>
+                    <div class="row g-3">
                         <div class="col-6">
-                            <strong>Marque:</strong> {{ product.brand }}
+                            <div class="d-flex justify-content-between border-bottom pb-2">
+                                <span class="text-muted">Marque:</span>
+                                <span class="fw-500">{{ product.brand }}</span>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <strong>Modèle:</strong> {{ product.model }}
+                            <div class="d-flex justify-content-between border-bottom pb-2">
+                                <span class="text-muted">Modèle:</span>
+                                <span class="fw-500">{{ product.model }}</span>
+                            </div>
                         </div>
-                        <div class="col-6 mt-2">
-                            <strong>Stock:</strong>
-                            {% if product.stock > 0 %}
-                                <span class="text-success">{{ product.stock }} disponible(s)</span>
-                            {% else %}
-                                <span class="text-danger">Rupture de stock</span>
-                            {% endif %}
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between border-bottom pb-2">
+                                <span class="text-muted">Stock:</span>
+                                {% if product.stock > 0 %}
+                                    <span class="text-success fw-500">{{ product.stock }} disponible(s)</span>
+                                {% else %}
+                                    <span class="text-danger fw-500">Rupture de stock</span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="col-6 mt-2">
-                            <strong>Ajouté le:</strong> {{ product.createdAt|date('d/m/Y') }}
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between border-bottom pb-2">
+                                <span class="text-muted">Ajouté le:</span>
+                                <span class="fw-500">{{ product.createdAt|date('d/m/Y') }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Add to Cart Form -->
+                <!-- Add to Cart Section -->
                 {% if app.user %}
                     {% if product.stock > 0 %}
-                        <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}" class="mb-4">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-auto">
-                                    <label for="quantity" class="form-label">Quantité</label>
-                                    <select class="form-select" id="quantity" name="quantity" style="width: 80px;">
-                                        {% for i in 1..min(5, product.stock) %}
-                                            <option value="{{ i }}">{{ i }}</option>
-                                        {% endfor %}
-                                    </select>
+                        <div class="bg-light p-4 mb-4" style="border-radius: 8px;">
+                            <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-auto">
+                                        <label for="quantity" class="form-label fw-500">Quantité</label>
+                                        <select class="form-select" id="quantity" name="quantity" style="width: 100px;">
+                                            {% for i in 1..min(5, product.stock) %}
+                                                <option value="{{ i }}">{{ i }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <button type="submit" class="btn btn-dark btn-lg w-100">
+                                            <i class="fas fa-cart-plus me-2"></i>Ajouter au Panier
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-cart-plus me-2"></i>Ajouter au Panier
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     {% else %}
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle me-2"></i>Ce produit est actuellement en rupture de stock.
@@ -92,22 +121,53 @@
                 {% else %}
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a> pour ajouter ce produit à votre panier.
+                        <a href="{{ path('app_login') }}" class="alert-link fw-500">Connectez-vous</a> pour ajouter ce produit à votre panier.
                     </div>
                 {% endif %}
 
                 <!-- Product Features -->
-                <div class="mt-5">
-                    <h5>Caractéristiques</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>Mouvement automatique suisse</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Boîtier en acier inoxydable</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Verre saphir anti-reflet</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Étanchéité 100m</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Garantie internationale 2 ans</li>
-                    </ul>
+                <div class="mt-4">
+                    <h5 class="fw-600 mb-3">Caractéristiques</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Mouvement automatique suisse</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Boîtier en acier inoxydable</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Verre saphir anti-reflet</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Étanchéité 100m</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Garantie internationale 2 ans</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span class="small">Livraison gratuite</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Related Products -->
+        <section class="mt-5 pt-5 border-top">
+            <div class="text-center mb-5">
+                <h3 class="fw-light">Vous pourriez aussi aimer</h3>
+            </div>
+            <!-- Add related products here if needed -->
+        </section>
     </div>
 {% endblock %}

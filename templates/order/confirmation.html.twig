@@ -3,90 +3,212 @@
 {% block title %}Commande confirmée - WatchStore{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
+    <div class="container-fluid py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
+                <!-- Success Header -->
                 <div class="text-center mb-5">
-                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
-                    <h1 class="display-4 text-success">Commande confirmée !</h1>
-                    <p class="lead">Merci pour votre achat. Votre commande a été traitée avec succès.</p>
+                    <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 120px; height: 120px;">
+                        <i class="fas fa-check-circle fa-4x text-success"></i>
+                    </div>
+                    <h1 class="display-5 fw-light text-success mb-3">Commande confirmée !</h1>
+                    <p class="lead text-muted">Merci pour votre achat. Votre commande a été traitée avec succès.</p>
                 </div>
 
-                <div class="card">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">
+                <!-- Order Details Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white border-0 py-3">
+                        <h4 class="mb-0 fw-600">
                             <i class="fas fa-receipt me-2"></i>
                             Détails de la commande #{{ order.id }}
                         </h4>
                     </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
+                    <div class="card-body p-4">
+                        <!-- Customer & Shipping Info -->
+                        <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <h6>Informations client</h6>
-                                <p class="mb-1"><strong>{{ order.user.firstName }} {{ order.user.lastName }}</strong></p>
-                                <p class="mb-1">{{ order.user.email }}</p>
-                                <p class="mb-0">Commande passée le {{ order.createdAt|date('d/m/Y à H:i') }}</p>
+                                <div class="bg-light rounded p-3">
+                                    <h6 class="fw-600 mb-3">
+                                        <i class="fas fa-user me-2 text-primary"></i>
+                                        Informations client
+                                    </h6>
+                                    <p class="mb-2">
+                                        <strong>{{ order.user.firstName }} {{ order.user.lastName }}</strong>
+                                    </p>
+                                    <p class="mb-2 text-muted">{{ order.user.email }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Commande passée le {{ order.createdAt|date('d/m/Y à H:i') }}
+                                    </small>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <h6>Adresse de livraison</h6>
-                                <p class="mb-0">{{ order.shippingAddress|nl2br }}</p>
+                                <div class="bg-light rounded p-3">
+                                    <h6 class="fw-600 mb-3">
+                                        <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                                        Adresse de livraison
+                                    </h6>
+                                    <p class="mb-0">{{ order.shippingAddress|nl2br }}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <h6>Articles commandés</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>Produit</th>
-                                    <th>Prix unitaire</th>
-                                    <th>Quantité</th>
-                                    <th>Total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for item in order.orderItems %}
+                        <!-- Order Items -->
+                        <div class="mb-4">
+                            <h6 class="fw-600 mb-3">
+                                <i class="fas fa-box me-2 text-primary"></i>
+                                Articles commandés
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
                                     <tr>
-                                        <td>
-                                            <strong>{{ item.product.name }}</strong><br>
-                                            <small class="text-muted">{{ item.product.brand }} - {{ item.product.model }}</small>
-                                        </td>
-                                        <td>{{ item.price|number_format(2, ',', ' ') }} €</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td><strong>{{ item.subTotal|number_format(2, ',', ' ') }} €</strong></td>
+                                        <th class="border-0 fw-600">Produit</th>
+                                        <th class="border-0 fw-600">Prix unitaire</th>
+                                        <th class="border-0 fw-600">Quantité</th>
+                                        <th class="border-0 fw-600">Total</th>
                                     </tr>
-                                {% endfor %}
-                                </tbody>
-                                <tfoot class="table-light">
-                                <tr>
-                                    <th colspan="3">Total de la commande</th>
-                                    <th class="text-primary">{{ order.total|number_format(2, ',', ' ') }} €</th>
-                                </tr>
-                                </tfoot>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in order.orderItems %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong class="d-block">{{ item.product.name }}</strong>
+                                                    <small class="text-muted">{{ item.product.brand }} - {{ item.product.model }}</small>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted">{{ item.price|number_format(2, ',', ' ') }} €</td>
+                                            <td>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ item.quantity }}</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">{{ item.subTotal|number_format(2, ',', ' ') }} €</strong>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Order Total -->
+                            <div class="bg-primary bg-opacity-5 rounded p-3 mt-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fw-600">Total de la commande</h5>
+                                    <h4 class="mb-0 fw-bold text-primary">{{ order.total|number_format(2, ',', ' ') }} €</h4>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="alert alert-info mt-4">
-                            <h6><i class="fas fa-info-circle me-2"></i>Prochaines étapes</h6>
-                            <ul class="mb-0">
-                                <li>Vous recevrez un email de confirmation sous peu</li>
-                                <li>Votre commande sera préparée dans les 24-48h</li>
-                                <li>Vous recevrez un email avec le numéro de suivi</li>
-                                <li>Livraison estimée : 3-5 jours ouvrés</li>
-                            </ul>
+                        <!-- Next Steps -->
+                        <div class="alert alert-info border-0 mb-4" style="background-color: #e3f2fd;">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-600 mb-2">Prochaines étapes</h6>
+                                    <ul class="mb-0 ps-3">
+                                        <li class="mb-1">
+                                            <i class="fas fa-envelope me-2 text-info"></i>
+                                            Vous recevrez un email de confirmation sous peu
+                                        </li>
+                                        <li class="mb-1">
+                                            <i class="fas fa-box-open me-2 text-info"></i>
+                                            Votre commande sera préparée dans les 24-48h
+                                        </li>
+                                        <li class="mb-1">
+                                            <i class="fas fa-truck me-2 text-info"></i>
+                                            Vous recevrez un email avec le numéro de suivi
+                                        </li>
+                                        <li class="mb-0">
+                                            <i class="fas fa-clock me-2 text-info"></i>
+                                            Livraison estimée : 3-5 jours ouvrés
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="text-center mt-4">
-                            <a href="{{ path('app_home') }}" class="btn btn-primary me-2">
-                                <i class="fas fa-home me-2"></i>Retour à l'accueil
-                            </a>
-                            <a href="{{ path('app_order_history') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-history me-2"></i>Mes commandes
-                            </a>
+                        <!-- Action Buttons -->
+                        <div class="text-center">
+                            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                                <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-home me-2"></i>
+                                    Retour à l'accueil
+                                </a>
+                                <a href="{{ path('app_order_history') }}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-history me-2"></i>
+                                    Mes commandes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="row g-4 mt-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 text-center">
+                            <div class="card-body p-4">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-shield-alt fa-2x text-success"></i>
+                                </div>
+                                <h6 class="fw-600 mb-2">Paiement sécurisé</h6>
+                                <p class="text-muted mb-0 small">Transaction protégée par SSL</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 text-center">
+                            <div class="card-body p-4">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-truck fa-2x text-primary"></i>
+                                </div>
+                                <h6 class="fw-600 mb-2">Livraison rapide</h6>
+                                <p class="text-muted mb-0 small">Expédition sous 24-48h</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 text-center">
+                            <div class="card-body p-4">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-headset fa-2x text-warning"></i>
+                                </div>
+                                <h6 class="fw-600 mb-2">Support client</h6>
+                                <p class="text-muted mb-0 small">Assistance 7j/7</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .bg-opacity-5 {
+            --bs-bg-opacity: 0.05;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
 {% endblock %}
