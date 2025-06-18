@@ -2,6 +2,10 @@
 
 {% block title %}{{ product.name }} - ENZO Collection{% endblock %}
 
+{% block categories_section %}
+    {# Override to prevent duplication #}
+{% endblock %}
+
 {% block body %}
     <div class="container py-5">
         <!-- Breadcrumb -->
@@ -9,6 +13,9 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a></li>
                 <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}" class="text-decoration-none">Montres</a></li>
+                {% if product.category %}
+                    <li class="breadcrumb-item"><a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="text-decoration-none">{{ product.category.name }}</a></li>
+                {% endif %}
                 <li class="breadcrumb-item active">{{ product.name }}</li>
             </ol>
         </nav>
@@ -42,6 +49,11 @@
             <div class="col-lg-6">
                 <div class="mb-3">
                     <span class="badge bg-dark text-uppercase">{{ product.brand }}</span>
+                    {% if product.category %}
+                        <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="badge bg-light text-dark text-decoration-none ms-2">
+                            {{ product.category.name }}
+                        </a>
+                    {% endif %}
                 </div>
 
                 <h1 class="display-5 fw-light mb-3">{{ product.name }}</h1>
@@ -72,6 +84,14 @@
                                 <span class="fw-500">{{ product.model }}</span>
                             </div>
                         </div>
+                        {% if product.category %}
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Catégorie:</span>
+                                    <span class="fw-500">{{ product.category.name }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
                         <div class="col-6">
                             <div class="d-flex justify-content-between border-bottom pb-2">
                                 <span class="text-muted">Stock:</span>
@@ -163,11 +183,17 @@
         </div>
 
         <!-- Related Products -->
-        <section class="mt-5 pt-5 border-top">
-            <div class="text-center mb-5">
-                <h3 class="fw-light">Vous pourriez aussi aimer</h3>
-            </div>
-            <!-- Add related products here if needed -->
-        </section>
+        {% if product.category %}
+            <section class="mt-5 pt-5 border-top">
+                <div class="text-center mb-5">
+                    <h3 class="fw-light">Autres montres dans {{ product.category.name }}</h3>
+                </div>
+                <div class="text-center">
+                    <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="btn-primary-custom">
+                        Voir toute la catégorie {{ product.category.name }}
+                    </a>
+                </div>
+            </section>
+        {% endif %}
     </div>
 {% endblock %}

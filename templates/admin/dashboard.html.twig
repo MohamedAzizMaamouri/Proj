@@ -2,6 +2,10 @@
 
 {% block title %}Administration - ENZO Collection{% endblock %}
 
+{% block categories_section %}
+    {# Override to prevent duplication #}
+{% endblock %}
+
 {% block body %}
     <div class="container-fluid py-4">
         <!-- Page Header -->
@@ -89,15 +93,15 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                                    <i class="fas fa-pause-circle fa-2x text-warning"></i>
+                                    <i class="fas fa-tags fa-2x text-warning"></i>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="text-muted mb-1">Produits Inactifs</h6>
-                                <h3 class="mb-0 fw-bold">{{ (total_products - active_products)|number_format(0, ',', ' ') }}</h3>
+                                <h6 class="text-muted mb-1">Catégories</h6>
+                                <h3 class="mb-0 fw-bold">{{ total_categories|number_format(0, ',', ' ') }}</h3>
                                 <small class="text-warning">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>
-                                    Hors ligne
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    Actives
                                 </small>
                             </div>
                         </div>
@@ -125,6 +129,17 @@
                                 <div class="flex-grow-1">
                                     <div class="fw-600">Ajouter un produit</div>
                                     <small class="text-muted">Créer une nouvelle montre</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="{{ path('app_admin_category_new') }}" class="btn btn-outline-warning btn-lg d-flex align-items-center text-start">
+                                <div class="bg-warning bg-opacity-10 rounded-3 p-2 me-3">
+                                    <i class="fas fa-tags text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-600">Ajouter une catégorie</div>
+                                    <small class="text-muted">Créer une nouvelle catégorie</small>
                                 </div>
                                 <i class="fas fa-chevron-right text-muted"></i>
                             </a>
@@ -190,7 +205,7 @@
                                                     <small class="text-muted">{{ order.user.firstName }} {{ order.user.lastName }}</small>
                                                 </div>
                                                 <div class="text-end">
-                                                    <span class="fw-600 text-primary">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                                                    <span class="fw-600 text-primary">{{ order.total|number_format(2, ',', ' ') }} DT</span>
                                                     <small class="text-muted d-block">{{ order.createdAt|date('d/m/Y H:i') }}</small>
                                                 </div>
                                             </div>
@@ -206,7 +221,7 @@
 
         <!-- Management Links -->
         <div class="row g-4 mt-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm h-100 text-center">
                     <div class="card-body p-4">
                         <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
@@ -221,7 +236,22 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-tags fa-2x text-warning"></i>
+                        </div>
+                        <h5 class="fw-600 mb-2">Catégories</h5>
+                        <p class="text-muted mb-4">Organiser les produits par catégorie</p>
+                        <a href="{{ path('app_admin_categories') }}" class="btn btn-warning">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm h-100 text-center">
                     <div class="card-body p-4">
                         <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
@@ -236,7 +266,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm h-100 text-center">
                     <div class="card-body p-4">
                         <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
@@ -244,7 +274,7 @@
                         </div>
                         <h5 class="fw-600 mb-2">Utilisateurs</h5>
                         <p class="text-muted mb-4">Gérer les comptes clients</p>
-                        <a href="#" class="btn btn-info">
+                        <a href="{{ path('app_admin_users') }}" class="btn btn-info">
                             <i class="fas fa-arrow-right me-2"></i>Accéder
                         </a>
                     </div>

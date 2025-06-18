@@ -1,0 +1,248 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs - ENZO Collection{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-light mb-0">Gestion des Utilisateurs</h1>
+                <p class="text-muted mb-0">{{ total_users }} utilisateur(s) au total</p>
+            </div>
+            <div>
+                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+                </a>
+                <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nouvel utilisateur
+                </a>
+            </div>
+        </div>
+
+        <!-- Role Filter Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <a href="{{ path('app_admin_users') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if not current_role %}bg-primary text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Tous les utilisateurs</h6>
+                            <h4 class="mb-0">{{ role_counts.all }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ path('app_admin_users', {role: 'ROLE_ADMIN'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_role == 'ROLE_ADMIN' %}bg-danger text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Administrateurs</h6>
+                            <h4 class="mb-0">{{ role_counts.admin }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ path('app_admin_users', {role: 'ROLE_USER'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm {% if current_role == 'ROLE_USER' %}bg-success text-white{% endif %}">
+                        <div class="card-body text-center py-3">
+                            <h6 class="mb-1">Utilisateurs</h6>
+                            <h4 class="mb-0">{{ role_counts.user }}</h4>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-600">
+                    <i class="fas fa-users me-2 text-primary"></i>
+                    Liste des Utilisateurs
+                    {% if current_role %}
+                        - {{ current_role == 'ROLE_ADMIN' ? 'Administrateurs' : 'Utilisateurs' }}
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if users is empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucun utilisateur trouvé</h5>
+                        <p class="text-muted mb-0">
+                            {% if current_role %}
+                                Aucun utilisateur avec le rôle sélectionné
+                            {% else %}
+                                Aucun utilisateur enregistré pour le moment
+                            {% endif %}
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="border-0 fw-600">Utilisateur</th>
+                                <th class="border-0 fw-600">Email</th>
+                                <th class="border-0 fw-600">Rôle</th>
+                                <th class="border-0 fw-600">Commandes</th>
+                                <th class="border-0 fw-600 text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 50px; height: 50px;">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-600">{{ user.firstName }} {{ user.lastName }}</h6>
+                                                <small class="text-muted">ID: #{{ user.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="fw-600">{{ user.email }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if 'ROLE_ADMIN' in user.roles %}
+                                            <span class="badge bg-danger px-3 py-2">
+                                                    <i class="fas fa-crown me-1"></i>Administrateur
+                                                </span>
+                                        {% else %}
+                                            <span class="badge bg-success px-3 py-2">
+                                                    <i class="fas fa-user me-1"></i>Utilisateur
+                                                </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="fw-600 text-info">{{ user.orders|length }}</span>
+                                        <small class="text-muted">commande(s)</small>
+                                    </td>
+                                    <td class="align-middle text-end">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ path('app_admin_user_show', {id: user.id}) }}"
+                                               class="btn btn-outline-primary btn-sm" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if 'ROLE_ADMIN' not in user.roles %}
+                                                <button type="button" class="btn btn-outline-warning btn-sm"
+                                                        title="Promouvoir Admin" onclick="promoteUser({{ user.id }}, 'ROLE_ADMIN')">
+                                                    <i class="fas fa-crown"></i>
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                        title="Rétrograder Utilisateur" onclick="promoteUser({{ user.id }}, 'ROLE_USER')">
+                                                    <i class="fas fa-user"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+            <nav aria-label="Navigation des utilisateurs" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('app_admin_users', {page: current_page - 1, role: current_role}) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page in 1..total_pages %}
+                        <li class="page-item {% if page == current_page %}active{% endif %}">
+                            <a class="page-link" href="{{ path('app_admin_users', {page: page, role: current_role}) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('app_admin_users', {page: current_page + 1, role: current_role}) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+
+    <!-- Promote Confirmation Modal -->
+    <div class="modal fade" id="promoteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer le changement de rôle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="promoteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form id="promoteForm" method="post" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('promote') }}">
+                        <input type="hidden" name="role" id="newRole">
+                        <button type="submit" class="btn btn-primary">Confirmer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function promoteUser(userId, newRole) {
+            const form = document.getElementById('promoteForm');
+            const message = document.getElementById('promoteMessage');
+            const roleInput = document.getElementById('newRole');
+
+            // Fix the URL construction
+            form.action = `/admin/users/${userId}/promote`;
+            roleInput.value = newRole;
+
+            if (newRole === 'ROLE_ADMIN') {
+                message.textContent = 'Êtes-vous sûr de vouloir promouvoir cet utilisateur en tant qu\'administrateur ?';
+            } else {
+                message.textContent = 'Êtes-vous sûr de vouloir rétrograder cet administrateur en tant qu\'utilisateur ?';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('promoteModal'));
+            modal.show();
+        }
+    </script>
+
+    <style>
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+{% endblock %}

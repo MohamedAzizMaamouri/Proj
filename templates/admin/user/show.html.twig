@@ -1,0 +1,243 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateur {{ user.firstName }} {{ user.lastName }} - ENZO Collection{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-light mb-0">{{ user.firstName }} {{ user.lastName }}</h1>
+                <p class="text-muted mb-0">Détails de l'utilisateur #{{ user.id }}</p>
+            </div>
+            <div>
+                <a href="{{ path('app_admin_users') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- User Information -->
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            Informations personnelles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="fw-600">{{ user.firstName }} {{ user.lastName }}</h4>
+                            <p class="text-muted mb-0">{{ user.email }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-600 mb-2">Rôle</h6>
+                            {% if 'ROLE_ADMIN' in user.roles %}
+                                <span class="badge bg-danger px-3 py-2">
+                                    <i class="fas fa-crown me-1"></i>Administrateur
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success px-3 py-2">
+                                    <i class="fas fa-user me-1"></i>Utilisateur
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {% if 'ROLE_ADMIN' not in user.roles %}
+                                <button type="button" class="btn btn-warning" onclick="promoteUser({{ user.id }}, 'ROLE_ADMIN')">
+                                    <i class="fas fa-crown me-2"></i>Promouvoir Administrateur
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-outline-secondary" onclick="promoteUser({{ user.id }}, 'ROLE_USER')">
+                                    <i class="fas fa-user me-2"></i>Rétrograder Utilisateur
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-chart-bar me-2 text-primary"></i>
+                            Statistiques
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total des commandes:</span>
+                            <span class="fw-600 text-primary">{{ user.orders|length }}</span>
+                        </div>
+                        {% set totalSpent = 0 %}
+                        {% for order in user.orders %}
+                            {% set totalSpent = totalSpent + order.total %}
+                        {% endfor %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total dépensé:</span>
+                            <span class="fw-600 text-success">{{ totalSpent|number_format(2, ',', ' ') }} €</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Panier actuel:</span>
+                            <span class="fw-600 text-info">
+                                {% if user.cart %}
+                                    {{ user.cart.totalItems }} article(s)
+                                {% else %}
+                                    0 article(s)
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders History -->
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-600">
+                            <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                            Historique des commandes
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if user.orders is empty %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted">Aucune commande</h6>
+                                <p class="text-muted mb-0">Cet utilisateur n'a pas encore passé de commande</p>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0 fw-600">Commande</th>
+                                        <th class="border-0 fw-600">Date</th>
+                                        <th class="border-0 fw-600">Statut</th>
+                                        <th class="border-0 fw-600">Total</th>
+                                        <th class="border-0 fw-600 text-end">Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for order in user.orders|slice(0, 5) %}
+                                        <tr>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
+                                                        <i class="fas fa-receipt text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 fw-600">#{{ order.id }}</h6>
+                                                        <small class="text-muted">{{ order.orderItems|length }} article(s)</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div>
+                                                    <div class="fw-600">{{ order.createdAt|date('d/m/Y') }}</div>
+                                                    <small class="text-muted">{{ order.createdAt|date('H:i') }}</small>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                {% set status_class = {
+                                                    'pending': 'warning',
+                                                    'processing': 'info',
+                                                    'shipped': 'primary',
+                                                    'delivered': 'success',
+                                                    'cancelled': 'danger'
+                                                } %}
+                                                <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-2 py-1">
+                                                        {{ order.status|title }}
+                                                    </span>
+                                            </td>
+                                            <td class="align-middle">
+                                                <span class="fw-600 text-primary">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                                            </td>
+                                            <td class="align-middle text-end">
+                                                <a href="{{ path('app_admin_order_show', {id: order.id}) }}"
+                                                   class="btn btn-outline-primary btn-sm" title="Voir la commande">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if user.orders|length > 5 %}
+                                <div class="card-footer bg-light text-center py-2">
+                                    <small class="text-muted">
+                                        Affichage des 5 dernières commandes sur {{ user.orders|length }} au total
+                                    </small>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promote Confirmation Modal -->
+    <div class="modal fade" id="promoteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer le changement de rôle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="promoteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form id="promoteForm" method="post" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('promote' ~ user.id) }}">
+                        <input type="hidden" name="role" id="newRole">
+                        <button type="submit" class="btn btn-primary">Confirmer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function promoteUser(userId, newRole) {
+            const form = document.getElementById('promoteForm');
+            const message = document.getElementById('promoteMessage');
+            const roleInput = document.getElementById('newRole');
+
+            // Fix the URL construction
+            form.action = `/admin/users/${userId}/promote`;
+            roleInput.value = newRole;
+
+            if (newRole === 'ROLE_ADMIN') {
+                message.textContent = 'Êtes-vous sûr de vouloir promouvoir cet utilisateur en tant qu\'administrateur ?';
+            } else {
+                message.textContent = 'Êtes-vous sûr de vouloir rétrograder cet administrateur en tant qu\'utilisateur ?';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('promoteModal'));
+            modal.show();
+        }
+    </script>
+
+    <style>
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+{% endblock %}

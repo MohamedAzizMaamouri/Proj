@@ -16,3 +16,4 @@ services:
 
 parameters:
     images_directory: '%kernel.project_dir%/public/uploads/images'
+    categories_directory: '%kernel.project_dir%/public/uploads/categories'

@@ -91,6 +91,42 @@
                 color: var(--accent-color);
             }
 
+            /* Bootstrap Dropdown Styles */
+            .main-nav .dropdown-menu {
+                background: white;
+                border: none;
+                border-radius: 0;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                padding: 15px 0;
+                margin-top: 10px;
+                min-width: 220px;
+            }
+
+            .main-nav .dropdown-item {
+                color: var(--text-dark) !important;
+                padding: 8px 20px;
+                font-size: 13px;
+                font-weight: 400;
+                text-transform: none;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+            }
+
+            .main-nav .dropdown-item:hover {
+                background: var(--secondary-color);
+                color: var(--primary-color) !important;
+                padding-left: 25px;
+            }
+
+            .main-nav .dropdown-divider {
+                margin: 10px 20px;
+                border-color: #eee;
+            }
+
+            .main-nav .dropdown-toggle::after {
+                display: none;
+            }
+
             .header-icons {
                 display: flex;
                 align-items: center;
@@ -219,6 +255,63 @@
                 color: var(--primary-color);
             }
 
+            /* Category Cards */
+            .category-card {
+                border: none;
+                transition: all 0.3s ease;
+                background: white;
+                border-radius: 0;
+                overflow: hidden;
+                position: relative;
+                height: 350px;
+            }
+
+            .category-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+            .category-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .category-card:hover .category-image {
+                transform: scale(1.05);
+            }
+
+            .category-overlay {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(transparent, rgba(0,0,0,0.8));
+                color: white;
+                padding: 30px 20px 20px;
+                text-align: center;
+            }
+
+            .category-name {
+                font-size: 20px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                letter-spacing: 1px;
+            }
+
+            .category-description {
+                font-size: 14px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+
+            .category-link {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+
             /* Footer */
             .main-footer {
                 background: var(--primary-color);
@@ -328,8 +421,22 @@
                 <nav>
                     <ul class="main-nav justify-content-center">
                         <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                        <li><a href="{{ path('app_product_index') }}">Montres</a></li>
-                        <li><a href="{{ path('app_product_index') }}?category=connected">SmartWatches</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Montres <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ path('app_product_index') }}">Toutes les montres</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-de-luxe'}) }}">Montres de Luxe</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-sport'}) }}">Montres Sport</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-habillees'}) }}">Montres Habillées</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-aviateur'}) }}">Montres d'Aviateur</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'chronographes'}) }}">Chronographes</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'plongee'}) }}">Montres de Plongée</a></li>
+                            </ul>
+                        </li>
                         <li><a href="#accessories">Accessoires</a></li>
                         <li><a href="#contact">Contact</a></li>
                         {% if is_granted('ROLE_ADMIN') %}
@@ -388,6 +495,7 @@
 <main>
     {% block body %}{% endblock %}
 </main>
+
 
 <!-- Footer -->
 <footer class="main-footer">

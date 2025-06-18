@@ -2,6 +2,10 @@
 
 {% block title %}Modifier {{ product.name }} - Administration{% endblock %}
 
+{% block categories_section %}
+    {# Override to prevent duplication #}
+{% endblock %}
+
 {% block body %}
     <div class="container py-5">
         <nav aria-label="breadcrumb">
@@ -35,10 +39,16 @@
                                 {{ form_row(form.price) }}
                             </div>
                             <div class="col-md-6">
+                                {{ form_row(form.brandChoice) }}
+                            </div>
+                            <div class="col-md-6" id="custom-brand-field">
                                 {{ form_row(form.brand) }}
                             </div>
                             <div class="col-md-6">
                                 {{ form_row(form.model) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.category) }}
                             </div>
                             <div class="col-md-6">
                                 {{ form_row(form.stock) }}
@@ -72,4 +82,34 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleBrandInput(value) {
+            const customBrandField = document.getElementById('custom-brand-field');
+            const brandInput = customBrandField.querySelector('input');
+
+            if (value === 'new') {
+                customBrandField.style.display = 'block';
+                brandInput.required = true;
+                brandInput.focus();
+            } else {
+                customBrandField.style.display = 'none';
+                brandInput.required = false;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const brandChoice = document.querySelector('select[name="product[brandChoice]"]');
+            if (brandChoice) {
+                toggleBrandInput(brandChoice.value);
+
+                // Show custom brand field if it has a value (editing existing custom brand)
+                const brandInput = document.querySelector('input[name="product[brand]"]');
+                if (brandInput && brandInput.value && brandChoice.value === 'new') {
+                    document.getElementById('custom-brand-field').style.display = 'block';
+                }
+            }
+        });
+    </script>
 {% endblock %}

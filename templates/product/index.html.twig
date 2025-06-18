@@ -2,13 +2,29 @@
 
 {% block title %}Nos Montres - ENZO Collection{% endblock %}
 
+{% block categories_section %}
+    {# Override to prevent duplication #}
+{% endblock %}
+
 {% block body %}
     <!-- Page Header -->
     <section class="py-5 bg-light">
         <div class="container">
             <div class="text-center">
-                <h1 class="display-4 fw-light mb-3">Notre Collection</h1>
-                <p class="lead text-muted">Découvrez notre sélection exclusive de montres</p>
+                <h1 class="display-4 fw-light mb-3">
+                    {% if current_category %}
+                        {{ current_category.name }}
+                    {% else %}
+                        Notre Collection
+                    {% endif %}
+                </h1>
+                <p class="lead text-muted">
+                    {% if current_category %}
+                        {{ current_category.description }}
+                    {% else %}
+                        Découvrez notre sélection exclusive de montres
+                    {% endif %}
+                </p>
             </div>
         </div>
     </section>
@@ -36,9 +52,27 @@
                             </select>
                         </div>
 
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-500">Catégorie</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Toutes les catégories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.slug }}" {{ current_category and current_category.slug == category.slug ? 'selected' : '' }}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-dark w-100">
                             <i class="fas fa-search me-2"></i>Filtrer
                         </button>
+
+                        {% if current_search or current_brand or current_category %}
+                            <a href="{{ path('app_product_index') }}" class="btn btn-outline-secondary w-100 mt-2">
+                                <i class="fas fa-times me-2"></i>Effacer les filtres
+                            </a>
+                        {% endif %}
                     </form>
                 </div>
 
@@ -46,11 +80,23 @@
                 <div class="bg-white p-4 shadow-sm mt-4">
                     <h5 class="fw-600 mb-4">Catégories</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ path('app_product_index') }}" class="text-decoration-none text-dark">Toutes les montres</a></li>
-                        <li class="mb-2"><a href="{{ path('app_product_index') }}?category=classic" class="text-decoration-none text-muted">Montres Classiques</a></li>
-                        <li class="mb-2"><a href="{{ path('app_product_index') }}?category=connected" class="text-decoration-none text-muted">Montres Connectées</a></li>
-                        <li class="mb-2"><a href="{{ path('app_product_index') }}?category=luxury" class="text-decoration-none text-muted">Montres de Luxe</a></li>
-                        <li class="mb-2"><a href="{{ path('app_product_index') }}?category=sport" class="text-decoration-none text-muted">Montres Sport</a></li>
+                        <li class="mb-2">
+                            <a href="{{ path('app_product_index') }}"
+                               class="text-decoration-none {{ not current_category ? 'text-dark fw-bold' : 'text-muted' }}">
+                                Toutes les montres
+                            </a>
+                        </li>
+                        {% for category in categories %}
+                            <li class="mb-2">
+                                <a href="{{ path('app_category_show', {slug: category.slug}) }}"
+                                   class="text-decoration-none {{ current_category and current_category.id == category.id ? 'text-dark fw-bold' : 'text-muted' }}">
+                                    {{ category.name }}
+                                    {% if category.products|length > 0 %}
+                                        <span class="badge bg-light text-dark ms-1">{{ category.activeProducts|length }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -58,17 +104,50 @@
             <!-- Products Grid -->
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-light">Montres ({{ products|length }})</h2>
+                    <h2 class="fw-light">
+                        {% if current_category %}
+                            {{ current_category.name }} ({{ products|length }})
+                        {% else %}
+                            Montres ({{ products|length }})
+                        {% endif %}
+                    </h2>
                     <div class="d-flex align-items-center gap-3">
                         <span class="text-muted small">Trier par:</span>
-                        <select class="form-select form-select-sm" style="width: auto;">
-                            <option>Plus récent</option>
-                            <option>Prix croissant</option>
-                            <option>Prix décroissant</option>
-                            <option>Nom A-Z</option>
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="sortProducts(this.value)">
+                            <option value="newest">Plus récent</option>
+                            <option value="price_asc">Prix croissant</option>
+                            <option value="price_desc">Prix décroissant</option>
+                            <option value="name_asc">Nom A-Z</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Active Filters Display -->
+                {% if current_search or current_brand or current_category %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Filtres actifs:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if current_search %}
+                                <span class="badge bg-primary">
+                                    Recherche: "{{ current_search }}"
+                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({search: null})|url_encode }}" class="text-white ms-1">×</a>
+                                </span>
+                            {% endif %}
+                            {% if current_brand %}
+                                <span class="badge bg-primary">
+                                    Marque: {{ current_brand }}
+                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({brand: null})|url_encode }}" class="text-white ms-1">×</a>
+                                </span>
+                            {% endif %}
+                            {% if current_category %}
+                                <span class="badge bg-primary">
+                                    Catégorie: {{ current_category.name }}
+                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({category: null})|url_encode }}" class="text-white ms-1">×</a>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
 
                 {% if products is empty %}
                     <div class="text-center py-5">
@@ -78,9 +157,12 @@
                         <a href="{{ path('app_product_index') }}" class="btn-primary-custom">Voir tous les produits</a>
                     </div>
                 {% else %}
-                    <div class="row g-4">
+                    <div class="row g-4" id="products-grid">
                         {% for product in products %}
-                            <div class="col-lg-4 col-md-6">
+                            <div class="col-lg-4 col-md-6 product-item"
+                                 data-name="{{ product.name|lower }}"
+                                 data-price="{{ product.price }}"
+                                 data-date="{{ product.createdAt|date('Y-m-d') }}">
                                 <div class="product-card">
                                     <div class="position-relative overflow-hidden">
                                         {% if product.image %}
@@ -128,6 +210,13 @@
                                         <h5 class="product-name">{{ product.name }}</h5>
                                         <div class="product-price">{{ product.price|number_format(0, ',', ' ') }} DT</div>
                                         <small class="text-muted">{{ product.model }}</small>
+                                        {% if product.category %}
+                                            <div class="mt-2">
+                                                <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="badge bg-light text-dark text-decoration-none">
+                                                    {{ product.category.name }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -146,4 +235,27 @@
             opacity: 1 !important;
         }
     </style>
+
+    <script>
+        function sortProducts(sortBy) {
+            const grid = document.getElementById('products-grid');
+            const items = Array.from(grid.children);
+
+            items.sort((a, b) => {
+                switch(sortBy) {
+                    case 'price_asc':
+                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                    case 'price_desc':
+                        return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                    case 'name_asc':
+                        return a.dataset.name.localeCompare(b.dataset.name);
+                    case 'newest':
+                    default:
+                        return new Date(b.dataset.date) - new Date(a.dataset.date);
+                }
+            });
+
+            items.forEach(item => grid.appendChild(item));
+        }
+    </script>
 {% endblock %}

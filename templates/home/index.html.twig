@@ -2,6 +2,10 @@
 
 {% block title %}ENZO Collection - Montres de Luxe et Connectées{% endblock %}
 
+{% block categories_section %}
+    {# Override the global categories section to prevent duplication #}
+{% endblock %}
+
 {% block body %}
     <!-- Hero Section -->
     <section class="hero-section">
@@ -92,39 +96,111 @@
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="display-5 fw-light mb-3">Nos Catégories</h2>
+                <p class="lead text-muted">Découvrez notre sélection exclusive de montres par catégorie</p>
             </div>
 
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-clock fa-4x text-dark"></i>
+                {% if categories is defined and categories|length > 0 %}
+                    {% for category in categories|slice(0, 3) %}
+                        <div class="col-md-4">
+                            <a href="{{ path('app_category_show', {slug: category.slug}) }}" class="text-decoration-none">
+                                <div class="category-card h-100">
+                                    {% if category.image %}
+                                        <img src="{{ asset('uploads/categories/' ~ category.image) }}" class="category-image" alt="{{ category.name }}">
+                                    {% else %}
+                                        <div class="category-image bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                            {% if 'luxe' in category.slug %}
+                                                <i class="fas fa-gem fa-4x text-white"></i>
+                                            {% elseif 'sport' in category.slug %}
+                                                <i class="fas fa-running fa-4x text-white"></i>
+                                            {% elseif 'chronographe' in category.slug %}
+                                                <i class="fas fa-stopwatch fa-4x text-white"></i>
+                                            {% elseif 'plongee' in category.slug %}
+                                                <i class="fas fa-swimmer fa-4x text-white"></i>
+                                            {% elseif 'aviateur' in category.slug %}
+                                                <i class="fas fa-plane fa-4x text-white"></i>
+                                            {% else %}
+                                                <i class="fas fa-clock fa-4x text-white"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="category-overlay">
+                                        <h4 class="category-name">{{ category.name }}</h4>
+                                        <p class="category-description">{{ category.description|slice(0, 80) }}{% if category.description|length > 80 %}...{% endif %}</p>
+                                        <div class="mt-3">
+                                            <span class="btn btn-light btn-sm">
+                                                Découvrir <i class="fas fa-arrow-right ms-1"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
-                        <h4 class="fw-light">Montres Classiques</h4>
-                        <p class="text-muted">Élégance intemporelle et savoir-faire traditionnel</p>
-                        <a href="{{ path('app_product_index') }}?category=classic" class="btn btn-outline-dark">Découvrir</a>
+                    {% endfor %}
+                {% else %}
+                    <!-- Fallback if no categories are passed from controller -->
+                    <div class="col-md-4">
+                        <a href="{{ path('app_category_show', {slug: 'montres-de-luxe'}) }}" class="text-decoration-none">
+                            <div class="category-card h-100">
+                                <div class="category-image bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="fas fa-gem fa-4x text-white"></i>
+                                </div>
+                                <div class="category-overlay">
+                                    <h4 class="category-name">Montres de Luxe</h4>
+                                    <p class="category-description">Collection exclusive des plus grandes manufactures horlogères</p>
+                                    <div class="mt-3">
+                                        <span class="btn btn-light btn-sm">
+                                            Découvrir <i class="fas fa-arrow-right ms-1"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-mobile-alt fa-4x text-dark"></i>
-                        </div>
-                        <h4 class="fw-light">Montres Connectées</h4>
-                        <p class="text-muted">Technologie avancée et design moderne</p>
-                        <a href="{{ path('app_product_index') }}?category=connected" class="btn btn-outline-dark">Découvrir</a>
+                    <div class="col-md-4">
+                        <a href="{{ path('app_category_show', {slug: 'montres-sport'}) }}" class="text-decoration-none">
+                            <div class="category-card h-100">
+                                <div class="category-image bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <i class="fas fa-running fa-4x text-white"></i>
+                                </div>
+                                <div class="category-overlay">
+                                    <h4 class="category-name">Montres Sport</h4>
+                                    <p class="category-description">Montres robustes conçues pour les activités sportives et l'aventure</p>
+                                    <div class="mt-3">
+                                        <span class="btn btn-light btn-sm">
+                                            Découvrir <i class="fas fa-arrow-right ms-1"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-gem fa-4x text-dark"></i>
-                        </div>
-                        <h4 class="fw-light">Montres de Luxe</h4>
-                        <p class="text-muted">Prestige et exclusivité pour les connaisseurs</p>
-                        <a href="{{ path('app_product_index') }}?category=luxury" class="btn btn-outline-dark">Découvrir</a>
+                    <div class="col-md-4">
+                        <a href="{{ path('app_category_show', {slug: 'chronographes'}) }}" class="text-decoration-none">
+                            <div class="category-card h-100">
+                                <div class="category-image bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <i class="fas fa-stopwatch fa-4x text-white"></i>
+                                </div>
+                                <div class="category-overlay">
+                                    <h4 class="category-name">Chronographes</h4>
+                                    <p class="category-description">Montres équipées de fonction chronométrage précis</p>
+                                    <div class="mt-3">
+                                        <span class="btn btn-light btn-sm">
+                                            Découvrir <i class="fas fa-arrow-right ms-1"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </div>
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{{ path('app_category_index') }}" class="btn-primary-custom">
+                    Voir Toutes les Catégories
+                </a>
             </div>
         </div>
     </section>

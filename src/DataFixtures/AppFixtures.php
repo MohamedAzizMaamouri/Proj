@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Category;
 use App\Entity\Product;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -33,7 +34,80 @@ class AppFixtures extends Fixture
         $user->setPassword($this->passwordHasher->hashPassword($user, 'user123'));
         $manager->persist($user);
 
-        // Créer des produits avec des images
+        // Créer les catégories de montres
+        $categories = [];
+
+        // Catégories principales
+        $luxuryWatches = new Category();
+        $luxuryWatches->setName('Montres de Luxe');
+        $luxuryWatches->setSlug('montres-de-luxe');
+        $luxuryWatches->setDescription('Collection exclusive de montres de prestige des plus grandes manufactures horlogères');
+        $luxuryWatches->setSortOrder(1);
+        $manager->persist($luxuryWatches);
+        $categories['luxury'] = $luxuryWatches;
+
+        $sportWatches = new Category();
+        $sportWatches->setName('Montres Sport');
+        $sportWatches->setSlug('montres-sport');
+        $sportWatches->setDescription('Montres robustes conçues pour les activités sportives et l\'aventure');
+        $sportWatches->setSortOrder(2);
+        $manager->persist($sportWatches);
+        $categories['sport'] = $sportWatches;
+
+        $dressWatches = new Category();
+        $dressWatches->setName('Montres Habillées');
+        $dressWatches->setSlug('montres-habillees');
+        $dressWatches->setDescription('Montres élégantes pour les occasions formelles et le quotidien raffiné');
+        $dressWatches->setSortOrder(3);
+        $manager->persist($dressWatches);
+        $categories['dress'] = $dressWatches;
+
+        $pilotWatches = new Category();
+        $pilotWatches->setName('Montres d\'Aviateur');
+        $pilotWatches->setSlug('montres-aviateur');
+        $pilotWatches->setDescription('Montres inspirées de l\'aviation avec fonctions de navigation');
+        $pilotWatches->setSortOrder(4);
+        $manager->persist($pilotWatches);
+        $categories['pilot'] = $pilotWatches;
+
+        // Sous-catégories par type de mouvement
+        $mechanical = new Category();
+        $mechanical->setName('Mécaniques');
+        $mechanical->setSlug('mecaniques');
+        $mechanical->setDescription('Montres à mouvement mécanique manuel ou automatique');
+        $mechanical->setParent($luxuryWatches);
+        $mechanical->setSortOrder(1);
+        $manager->persist($mechanical);
+        $categories['mechanical'] = $mechanical;
+
+        $chronographs = new Category();
+        $chronographs->setName('Chronographes');
+        $chronographs->setSlug('chronographes');
+        $chronographs->setDescription('Montres équipées de fonction chronométrage');
+        $chronographs->setParent($sportWatches);
+        $chronographs->setSortOrder(1);
+        $manager->persist($chronographs);
+        $categories['chronographs'] = $chronographs;
+
+        $diving = new Category();
+        $diving->setName('Plongée');
+        $diving->setSlug('plongee');
+        $diving->setDescription('Montres étanches conçues pour la plongée sous-marine');
+        $diving->setParent($sportWatches);
+        $diving->setSortOrder(2);
+        $manager->persist($diving);
+        $categories['diving'] = $diving;
+
+        $complications = new Category();
+        $complications->setName('Grandes Complications');
+        $complications->setSlug('grandes-complications');
+        $complications->setDescription('Montres avec complications horlogères avancées');
+        $complications->setParent($luxuryWatches);
+        $complications->setSortOrder(2);
+        $manager->persist($complications);
+        $categories['complications'] = $complications;
+
+        // Créer des produits avec des images et catégories
         $products = [
             [
                 'name' => 'Rolex Submariner',
@@ -43,6 +117,7 @@ class AppFixtures extends Fixture
                 'model' => 'Submariner 116610LN',
                 'stock' => 5,
                 'image' => 'rolex-submariner.jpg',
+                'category' => $categories['diving'],
             ],
             [
                 'name' => 'Omega Speedmaster',
@@ -52,6 +127,7 @@ class AppFixtures extends Fixture
                 'model' => 'Speedmaster Professional',
                 'stock' => 8,
                 'image' => 'omega-speedmaster.jpg',
+                'category' => $categories['chronographs'],
             ],
             [
                 'name' => 'TAG Heuer Carrera',
@@ -61,6 +137,7 @@ class AppFixtures extends Fixture
                 'model' => 'Carrera Calibre 16',
                 'stock' => 12,
                 'image' => 'tag-heuer-carrera.jpg',
+                'category' => $categories['chronographs'],
             ],
             [
                 'name' => 'Breitling Navitimer',
@@ -70,6 +147,7 @@ class AppFixtures extends Fixture
                 'model' => 'Navitimer B01',
                 'stock' => 3,
                 'image' => 'breitling-navitimer.jpg',
+                'category' => $categories['pilot'],
             ],
             [
                 'name' => 'Patek Philippe Calatrava',
@@ -79,6 +157,7 @@ class AppFixtures extends Fixture
                 'model' => 'Calatrava 5196P',
                 'stock' => 2,
                 'image' => 'patek-philippe-calatrava.jpg',
+                'category' => $categories['dress'],
             ],
             [
                 'name' => 'Audemars Piguet Royal Oak',
@@ -88,6 +167,7 @@ class AppFixtures extends Fixture
                 'model' => 'Royal Oak 15400ST',
                 'stock' => 4,
                 'image' => 'audemars-piguet-royal-oak.jpg',
+                'category' => $categories['luxury'],
             ],
         ];
 
@@ -101,6 +181,7 @@ class AppFixtures extends Fixture
             $product->setStock($productData['stock']);
             $product->setImage($productData['image']);
             $product->setIsActive(true);
+            $product->setCategory($productData['category']);
 
             $manager->persist($product);
         }

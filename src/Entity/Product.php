@@ -28,6 +28,9 @@ class Product
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?Category $category = null;
+
     #[ORM\Column(length: 255)]
     private ?string $brand = null;
 
@@ -205,6 +208,17 @@ class Product
                 $orderItem->setProduct(null);
             }
         }
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
         return $this;
     }
 }

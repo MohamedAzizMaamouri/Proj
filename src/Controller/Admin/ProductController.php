@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Product;
 use App\Form\ProductType;
+use App\Repository\CategoryRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,51 +18,78 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
-class AdminController extends AbstractController
+class ProductController extends AbstractController
 {
     #[Route('/', name: 'app_admin_dashboard')]
-    public function dashboard(ProductRepository $productRepository, OrderRepository $orderRepository): Response
+    public function dashboard(ProductRepository $productRepository, OrderRepository $orderRepository, CategoryRepository $categoryRepository): Response
     {
         $totalProducts = $productRepository->count([]);
         $activeProducts = $productRepository->count(['isActive' => true]);
         $totalOrders = $orderRepository->count([]);
+        $totalCategories = $categoryRepository->count(['isActive' => true]);
         $recentOrders = $orderRepository->findBy([], ['createdAt' => 'DESC'], 5);
+        $recentProducts = $productRepository->findBy([], ['createdAt' => 'DESC'], 5);
 
         return $this->render('admin/dashboard.html.twig', [
             'total_products' => $totalProducts,
             'active_products' => $activeProducts,
             'total_orders' => $totalOrders,
+            'total_categories' => $totalCategories,
             'recent_orders' => $recentOrders,
+            'recent_products' => $recentProducts,
         ]);
     }
 
     #[Route('/products', name: 'app_admin_products')]
-    public function products(ProductRepository $productRepository): Response
+    public function products(ProductRepository $productRepository, Request $request): Response
     {
-        $products = $productRepository->findBy([], ['createdAt' => 'DESC']);
+        $search = $request->query->get('search');
+        $category = $request->query->get('category');
+        $brand = $request->query->get('brand');
+
+        if ($search || $category || $brand) {
+            $products = $productRepository->findByFilters($search, $brand);
+        } else {
+            $products = $productRepository->findBy([], ['createdAt' => 'DESC']);
+        }
+
+        $brands = $productRepository->findAllBrands();
 
         return $this->render('admin/products/index.html.twig', [
             'products' => $products,
+            'brands' => $brands,
+            'current_search' => $search,
+            'current_brand' => $brand,
         ]);
     }
 
     #[Route('/products/new', name: 'app_admin_product_new')]
-    public function newProduct(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function newProduct(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository): Response
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('imageFile')->getData();
+            // Handle brand selection
+            $brandChoice = $form->get('brandChoice')->getData();
+            if ($brandChoice === 'new') {
+                $customBrand = $form->get('brand')->getData();
+                if ($customBrand) {
+                    $product->setBrand($customBrand);
+                }
+            } else {
+                $product->setBrand($brandChoice);
+            }
 
+            // Handle image upload
+            $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
-                    // Créer le dossier s'il n'existe pas
                     $uploadDir = $this->getParameter('images_directory');
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0755, true);
@@ -84,21 +112,47 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_products');
         }
 
+        $existingBrands = $productRepository->findAllBrands();
+
         return $this->render('admin/products/new.html.twig', [
             'product' => $product,
             'form' => $form,
+            'existing_brands' => $existingBrands,
         ]);
     }
 
     #[Route('/products/{id}/edit', name: 'app_admin_product_edit')]
-    public function editProduct(Product $product, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function editProduct(Product $product, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository): Response
     {
         $form = $this->createForm(ProductType::class, $product);
+
+        // Pre-populate brand choice if product has existing brand
+        if ($product->getBrand()) {
+            $existingBrands = $productRepository->findAllBrands();
+            if (in_array($product->getBrand(), $existingBrands)) {
+                $form->get('brandChoice')->setData($product->getBrand());
+            } else {
+                $form->get('brandChoice')->setData('new');
+                $form->get('brand')->setData($product->getBrand());
+            }
+        }
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('imageFile')->getData();
+            // Handle brand selection
+            $brandChoice = $form->get('brandChoice')->getData();
+            if ($brandChoice === 'new') {
+                $customBrand = $form->get('brand')->getData();
+                if ($customBrand) {
+                    $product->setBrand($customBrand);
+                }
+            } else {
+                $product->setBrand($brandChoice);
+            }
 
+            // Handle image upload
+            $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
@@ -109,11 +163,10 @@ class AdminController extends AbstractController
                         $this->getParameter('images_directory'),
                         $newFilename
                     );
+                    $product->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
                 }
-
-                $product->setImage($newFilename);
             }
 
             $entityManager->flush();
@@ -123,9 +176,12 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_products');
         }
 
+        $existingBrands = $productRepository->findAllBrands();
+
         return $this->render('admin/products/edit.html.twig', [
             'product' => $product,
             'form' => $form,
+            'existing_brands' => $existingBrands,
         ]);
     }
 
@@ -139,6 +195,4 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_products');
     }
-
-
 }
