@@ -1,233 +1,647 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des Commandes - ENZO Collection{% endblock %}
+{% block title %}Gestion des Commandes - Administration - ENZO Collection{% endblock %}
 
 {% block body %}
     <div class="container-fluid py-4">
-        <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="display-6 fw-light mb-0">Gestion des Commandes</h1>
-                <p class="text-muted mb-0">{{ total_orders }} commande(s) au total</p>
-            </div>
-            <div>
-                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
-                </a>
-            </div>
-        </div>
-
-        <!-- Status Filter Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders') }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if not current_status %}bg-primary text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">Toutes</h6>
-                            <h4 class="mb-0">{{ total_orders }}</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders', {status: 'pending'}) }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if current_status == 'pending' %}bg-warning text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">En attente</h6>
-                            <h4 class="mb-0">{{ status_counts.pending }}</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders', {status: 'processing'}) }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if current_status == 'processing' %}bg-info text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">En cours</h6>
-                            <h4 class="mb-0">{{ status_counts.processing }}</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders', {status: 'shipped'}) }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if current_status == 'shipped' %}bg-primary text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">Expédiées</h6>
-                            <h4 class="mb-0">{{ status_counts.shipped }}</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders', {status: 'delivered'}) }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if current_status == 'delivered' %}bg-success text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">Livrées</h6>
-                            <h4 class="mb-0">{{ status_counts.delivered }}</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ path('app_admin_orders', {status: 'cancelled'}) }}" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm {% if current_status == 'cancelled' %}bg-danger text-white{% endif %}">
-                        <div class="card-body text-center py-3">
-                            <h6 class="mb-1">Annulées</h6>
-                            <h4 class="mb-0">{{ status_counts.cancelled }}</h4>
-                        </div>
-                    </div>
-                </a>
+        <!-- Enhanced Page Header -->
+        <div class="admin-dashboard-header mb-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="header-content">
+                    <h1 class="display-5 fw-light mb-2">
+                        <i class="fas fa-shopping-cart me-3 text-primary"></i>
+                        Gestion des Commandes
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        {{ total_orders }} commande{{ total_orders > 1 ? 's' : '' }} au total
+                    </p>
+                </div>
+                <div class="header-actions">
+                    <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Orders Table -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
+        <!-- Enhanced Status Filter Cards -->
+        <div class="status-filters mb-5">
+            <div class="row g-3">
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders') }}" class="filter-card-link">
+                        <div class="filter-card {% if not current_status %}active all{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ total_orders }}</h3>
+                                <p class="filter-label">Toutes</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders', {status: 'pending'}) }}" class="filter-card-link">
+                        <div class="filter-card {% if current_status == 'pending' %}active pending{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ status_counts.pending ?? 0 }}</h3>
+                                <p class="filter-label">En attente</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders', {status: 'processing'}) }}" class="filter-card-link">
+                        <div class="filter-card {% if current_status == 'processing' %}active processing{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ status_counts.processing ?? 0 }}</h3>
+                                <p class="filter-label">En cours</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders', {status: 'shipped'}) }}" class="filter-card-link">
+                        <div class="filter-card {% if current_status == 'shipped' %}active shipped{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ status_counts.shipped ?? 0 }}</h3>
+                                <p class="filter-label">Expédiées</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders', {status: 'delivered'}) }}" class="filter-card-link">
+                        <div class="filter-card {% if current_status == 'delivered' %}active delivered{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ status_counts.delivered ?? 0 }}</h3>
+                                <p class="filter-label">Livrées</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <a href="{{ path('app_admin_orders', {status: 'cancelled'}) }}" class="filter-card-link">
+                        <div class="filter-card {% if current_status == 'cancelled' %}active cancelled{% endif %}">
+                            <div class="filter-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="filter-content">
+                                <h3 class="filter-number">{{ status_counts.cancelled ?? 0 }}</h3>
+                                <p class="filter-label">Annulées</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Orders Table -->
+        <div class="orders-table-container">
+            <div class="table-header">
                 <h5 class="mb-0 fw-600">
-                    <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                    <i class="fas fa-table me-2 text-primary"></i>
                     Liste des Commandes
                     {% if current_status %}
-                        - {{ current_status|title }}
+                        <span class="badge bg-primary ms-2">{{ current_status|title }}</span>
                     {% endif %}
                 </h5>
-            </div>
-            <div class="card-body p-0">
-                {% if orders is empty %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Aucune commande trouvée</h5>
-                        <p class="text-muted mb-0">
-                            {% if current_status %}
-                                Aucune commande avec le statut "{{ current_status }}"
-                            {% else %}
-                                Aucune commande n'a été passée pour le moment
-                            {% endif %}
-                        </p>
-                    </div>
-                {% else %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                            <tr>
-                                <th class="border-0 fw-600">Commande</th>
-                                <th class="border-0 fw-600">Client</th>
-                                <th class="border-0 fw-600">Date</th>
-                                <th class="border-0 fw-600">Statut</th>
-                                <th class="border-0 fw-600">Total</th>
-                                <th class="border-0 fw-600 text-end">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for order in orders %}
-                                <tr>
-                                    <td class="align-middle">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
-                                                <i class="fas fa-receipt text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 fw-600">#{{ order.id }}</h6>
-                                                <small class="text-muted">{{ order.orderItems|length }} article(s)</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">
-                                        <div>
-                                            <h6 class="mb-0">{{ order.user.firstName }} {{ order.user.lastName }}</h6>
-                                            <small class="text-muted">{{ order.user.email }}</small>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">
-                                        <div>
-                                            <div class="fw-600">{{ order.createdAt|date('d/m/Y') }}</div>
-                                            <small class="text-muted">{{ order.createdAt|date('H:i') }}</small>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">
-                                        {% set status_class = {
-                                            'pending': 'warning',
-                                            'processing': 'info',
-                                            'shipped': 'primary',
-                                            'delivered': 'success',
-                                            'cancelled': 'danger'
-                                        } %}
-                                        <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-3 py-2">
-                                                {{ order.status|title }}
-                                            </span>
-                                    </td>
-                                    <td class="align-middle">
-                                        <span class="fw-600 text-primary">{{ order.total|number_format(2, ',', ' ') }} €</span>
-                                    </td>
-                                    <td class="align-middle text-end">
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ path('app_admin_order_show', {id: order.id}) }}"
-                                               class="btn btn-outline-primary btn-sm" title="Voir">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ path('app_admin_order_edit', {id: order.id}) }}"
-                                               class="btn btn-outline-secondary btn-sm" title="Modifier le statut">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                {% if orders is not empty %}
+                    <div class="table-actions">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="exportOrders()">
+                            <i class="fas fa-download me-1"></i>Exporter
+                        </button>
                     </div>
                 {% endif %}
             </div>
+
+            {% if orders is empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-cart fa-4x"></i>
+                    </div>
+                    <h4 class="empty-title">Aucune commande trouvée</h4>
+                    <p class="empty-description">
+                        {% if current_status %}
+                            Aucune commande avec le statut "{{ current_status }}" n'a été trouvée.
+                        {% else %}
+                            Aucune commande n'a été passée pour le moment.
+                        {% endif %}
+                    </p>
+                    {% if current_status %}
+                        <a href="{{ path('app_admin_orders') }}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Voir toutes les commandes
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table orders-table mb-0">
+                        <thead>
+                        <tr>
+                            <th class="border-0 fw-600">Commande</th>
+                            <th class="border-0 fw-600">Client</th>
+                            <th class="border-0 fw-600">Date</th>
+                            <th class="border-0 fw-600">Statut</th>
+                            <th class="border-0 fw-600">Total</th>
+                            <th class="border-0 fw-600 text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for order in orders %}
+                            <tr class="order-row">
+                                <td class="align-middle">
+                                    <div class="order-info">
+                                        <div class="order-icon">
+                                            <i class="fas fa-receipt"></i>
+                                        </div>
+                                        <div class="order-details">
+                                            <h6 class="mb-0 fw-600 order-number">#{{ order.id }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-box me-1"></i>
+                                                {{ order.orderItems|length }} article{{ order.orderItems|length > 1 ? 's' : '' }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="customer-info">
+                                        <div class="customer-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="customer-details">
+                                            <h6 class="mb-0 customer-name">{{ order.user.firstName }} {{ order.user.lastName }}</h6>
+                                            <small class="text-muted customer-email">{{ order.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="date-info">
+                                        <div class="fw-600 order-date">{{ order.createdAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted order-time">{{ order.createdAt|date('H:i') }}</small>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    {% set status_class = {
+                                        'pending': 'warning',
+                                        'processing': 'info',
+                                        'shipped': 'primary',
+                                        'delivered': 'success',
+                                        'cancelled': 'danger'
+                                    } %}
+                                    {% set status_icon = {
+                                        'pending': 'clock',
+                                        'processing': 'cog',
+                                        'shipped': 'truck',
+                                        'delivered': 'check-circle',
+                                        'cancelled': 'times-circle'
+                                    } %}
+                                    <span class="status-badge bg-{{ status_class[order.status] ?? 'secondary' }}">
+                                        <i class="fas fa-{{ status_icon[order.status] ?? 'question' }} me-1"></i>
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="price-info">
+                                        <span class="fw-600 text-primary order-total">{{ (order.total * 1.19)|number_format(0, ',', ' ') }} DT</span>
+                                        <small class="text-muted d-block">TTC</small>
+                                    </div>
+                                </td>
+                                <td class="align-middle text-end">
+                                    <div class="action-buttons">
+                                        <a href="{{ path('app_admin_order_show', {id: order.id}) }}"
+                                           class="btn btn-outline-primary btn-sm action-btn"
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_admin_order_edit', {id: order.id}) }}"
+                                           class="btn btn-outline-secondary btn-sm action-btn"
+                                           title="Modifier le statut">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         </div>
 
-        <!-- Pagination -->
+        <!-- Enhanced Pagination -->
         {% if total_pages > 1 %}
-            <nav aria-label="Navigation des commandes" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if current_page > 1 %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ path('app_admin_orders', {page: current_page - 1, status: current_status}) }}">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        </li>
-                    {% endif %}
+            <div class="pagination-container">
+                <nav aria-label="Navigation des commandes">
+                    <ul class="pagination justify-content-center">
+                        {% if current_page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_admin_orders', {page: current_page - 1, status: current_status}) }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    {% for page in 1..total_pages %}
-                        <li class="page-item {% if page == current_page %}active{% endif %}">
-                            <a class="page-link" href="{{ path('app_admin_orders', {page: page, status: current_status}) }}">
-                                {{ page }}
-                            </a>
-                        </li>
-                    {% endfor %}
+                        {% for page in 1..total_pages %}
+                            <li class="page-item {% if page == current_page %}active{% endif %}">
+                                <a class="page-link" href="{{ path('app_admin_orders', {page: page, status: current_status}) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% endfor %}
 
-                    {% if current_page < total_pages %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ path('app_admin_orders', {page: current_page + 1, status: current_status}) }}">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
+                        {% if current_page < total_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_admin_orders', {page: current_page + 1, status: current_status}) }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                <div class="pagination-info">
+                    <small class="text-muted">
+                        Page {{ current_page }} sur {{ total_pages }}
+                        ({{ orders|length }} commandes affichées)
+                    </small>
+                </div>
+            </div>
         {% endif %}
     </div>
 
+    <script>
+        function exportOrders() {
+            // Placeholder for export functionality
+            alert('Fonctionnalité d\'export en cours de développement');
+        }
+    </script>
+
     <style>
-        .card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        /* Dashboard Header */
+        .admin-dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
-        .card:hover {
+        .admin-dashboard-header .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Status Filter Cards */
+        .status-filters {
+            margin-bottom: 30px;
+        }
+
+        .filter-card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .filter-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .filter-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .filter-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: #6c757d;
+        }
+
+        /* Active Filter States */
+        .filter-card.active.all {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .filter-card.active.pending {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+        }
+
+        .filter-card.active.processing {
+            border-color: #17a2b8;
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .filter-card.active.shipped {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .filter-card.active.delivered {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .filter-card.active.cancelled {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .filter-card.active .filter-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .filter-card.active .filter-number,
+        .filter-card.active .filter-label {
+            color: white;
+        }
+
+        /* Orders Table Container */
+        .orders-table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Orders Table */
+        .orders-table {
+            margin-bottom: 0;
+        }
+
+        .orders-table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 20px 15px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .order-row {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .order-row:hover {
+            background-color: rgba(0, 123, 255, 0.03);
+            transform: translateX(5px);
+        }
+
+        .order-row td {
+            padding: 20px 15px;
+            vertical-align: middle;
+        }
+
+        /* Order Info */
+        .order-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .order-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+
+        .order-number {
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        /* Customer Info */
+        .customer-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+
+        .customer-name {
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .customer-email {
+            font-size: 12px;
+        }
+
+        /* Date Info */
+        .date-info {
+            text-align: left;
+        }
+
+        .order-date {
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .order-time {
+            font-size: 12px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Price Info */
+        .price-info {
+            text-align: left;
+        }
+
+        .order-total {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            margin-bottom: 30px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .empty-description {
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .pagination-info {
+            margin-top: 15px;
+        }
+
+        .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+            border: 1px solid #dee2e6;
+            color: #007bff;
+        }
+
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-color: #007bff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-dashboard-header .d-flex {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .orders-table {
+                font-size: 14px;
+            }
+
+            .order-info,
+            .customer-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
         }
 
         .fw-600 {
             font-weight: 600;
-        }
-
-        .bg-opacity-10 {
-            --bs-bg-opacity: 0.1;
         }
     </style>
 {% endblock %}

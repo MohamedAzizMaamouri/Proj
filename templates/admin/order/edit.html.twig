@@ -1,56 +1,126 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier Commande #{{ order.id }} - ENZO Collection{% endblock %}
+{% block title %}Modifier Commande #{{ order.id }} - Administration - ENZO Collection{% endblock %}
 
 {% block body %}
     <div class="container-fluid py-4">
-        <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="display-6 fw-light mb-0">Modifier Commande #{{ order.id }}</h1>
-                <p class="text-muted mb-0">Passée le {{ order.createdAt|date('d/m/Y à H:i') }}</p>
-            </div>
-            <div>
-                <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour aux détails
-                </a>
+        <!-- Enhanced Page Header -->
+        <div class="edit-header mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="header-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="edit-icon me-3">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div>
+                            <h1 class="display-6 fw-light mb-0">Modifier Commande #{{ order.id }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-calendar me-1"></i>
+                                Passée le {{ order.createdAt|date('d/m/Y à H:i') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+                    </a>
+                </div>
             </div>
         </div>
 
         <div class="row g-4">
+            <!-- Edit Form -->
             <div class="col-xl-8">
-                <!-- Edit Form -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
+                <div class="edit-form-card">
+                    <div class="form-header">
                         <h5 class="mb-0 fw-600">
-                            <i class="fas fa-edit me-2 text-primary"></i>
-                            Modifier le statut
+                            <i class="fas fa-cog me-2 text-primary"></i>
+                            Modification du statut
                         </h5>
+                        <div class="form-subtitle">
+                            <small class="text-muted">Seul le statut de la commande peut être modifié</small>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form method="post">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="status" class="form-label fw-600">Statut de la commande</label>
-                                    <select class="form-select" id="status" name="status" required>
-                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>En attente</option>
-                                        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>En cours de traitement</option>
-                                        <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Expédiée</option>
-                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Livrée</option>
-                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Annulée</option>
-                                    </select>
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Seul le statut de la commande peut être modifié
+                    <div class="form-body">
+                        <form method="post" class="status-form">
+                            <div class="status-selection">
+                                <label for="status" class="form-label fw-600 mb-3">
+                                    <i class="fas fa-flag me-2"></i>
+                                    Nouveau statut de la commande
+                                </label>
+
+                                <div class="status-options">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="status-option">
+                                                <input type="radio" class="btn-check" name="status" id="pending" value="pending" {% if order.status == 'pending' %}checked{% endif %}>
+                                                <label class="btn btn-outline-warning status-btn" for="pending">
+                                                    <div class="status-content">
+                                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                                        <h6 class="mb-1">En attente</h6>
+                                                        <small>Commande reçue, en attente de traitement</small>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="status-option">
+                                                <input type="radio" class="btn-check" name="status" id="processing" value="processing" {% if order.status == 'processing' %}checked{% endif %}>
+                                                <label class="btn btn-outline-info status-btn" for="processing">
+                                                    <div class="status-content">
+                                                        <i class="fas fa-cog fa-2x mb-2"></i>
+                                                        <h6 class="mb-1">En cours</h6>
+                                                        <small>Commande en cours de préparation</small>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="status-option">
+                                                <input type="radio" class="btn-check" name="status" id="shipped" value="shipped" {% if order.status == 'shipped' %}checked{% endif %}>
+                                                <label class="btn btn-outline-primary status-btn" for="shipped">
+                                                    <div class="status-content">
+                                                        <i class="fas fa-truck fa-2x mb-2"></i>
+                                                        <h6 class="mb-1">Expédiée</h6>
+                                                        <small>Commande expédiée vers le client</small>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="status-option">
+                                                <input type="radio" class="btn-check" name="status" id="delivered" value="delivered" {% if order.status == 'delivered' %}checked{% endif %}>
+                                                <label class="btn btn-outline-success status-btn" for="delivered">
+                                                    <div class="status-content">
+                                                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                                        <h6 class="mb-1">Livrée</h6>
+                                                        <small>Commande livrée avec succès</small>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="status-option">
+                                                <input type="radio" class="btn-check" name="status" id="cancelled" value="cancelled" {% if order.status == 'cancelled' %}checked{% endif %}>
+                                                <label class="btn btn-outline-danger status-btn" for="cancelled">
+                                                    <div class="status-content">
+                                                        <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                                        <h6 class="mb-1">Annulée</h6>
+                                                        <small>Commande annulée (remboursement nécessaire)</small>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-end mt-4">
-                                <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary me-2">
-                                    Annuler
+                            <div class="form-actions">
+                                <a href="{{ path('app_admin_order_show', {id: order.id}) }}" class="btn btn-outline-secondary btn-lg me-3">
+                                    <i class="fas fa-times me-2"></i>Annuler
                                 </a>
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-save me-2"></i>Enregistrer le statut
                                 </button>
                             </div>
@@ -59,16 +129,17 @@
                 </div>
             </div>
 
+            <!-- Sidebar -->
             <div class="col-xl-4">
                 <!-- Current Status -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white border-0 py-3">
+                <div class="sidebar-card mb-4">
+                    <div class="sidebar-header">
                         <h5 class="mb-0 fw-600">
                             <i class="fas fa-info-circle me-2 text-primary"></i>
                             Statut actuel
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="sidebar-body text-center">
                         {% set status_class = {
                             'pending': 'warning',
                             'processing': 'info',
@@ -83,70 +154,164 @@
                             'delivered': 'Livrée',
                             'cancelled': 'Annulée'
                         } %}
-                        <div class="text-center">
+                        {% set status_icon = {
+                            'pending': 'clock',
+                            'processing': 'cog',
+                            'shipped': 'truck',
+                            'delivered': 'check-circle',
+                            'cancelled': 'times-circle'
+                        } %}
+
+                        <div class="current-status">
+                            <div class="status-icon-large mb-3">
+                                <i class="fas fa-{{ status_icon[order.status] ?? 'question' }} fa-3x text-{{ status_class[order.status] ?? 'secondary' }}"></i>
+                            </div>
                             <span class="badge bg-{{ status_class[order.status] ?? 'secondary' }} px-4 py-3 fs-6">
                                 {{ status_text[order.status] ?? order.status|title }}
                             </span>
+                            <p class="text-muted mt-3 mb-0">
+                                <small>Dernière modification: {{ order.createdAt|date('d/m/Y à H:i') }}</small>
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Order Summary -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white border-0 py-3">
+                <div class="sidebar-card mb-4">
+                    <div class="sidebar-header">
                         <h5 class="mb-0 fw-600">
                             <i class="fas fa-shopping-cart me-2 text-primary"></i>
                             Résumé de la commande
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Articles:</span>
-                            <span class="fw-600">{{ order.orderItems|length }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Client:</span>
-                            <span class="fw-600">{{ order.user.firstName }} {{ order.user.lastName }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Date:</span>
-                            <span class="fw-600">{{ order.createdAt|date('d/m/Y') }}</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-600">Total:</span>
-                            <span class="fw-600 text-primary h5 mb-0">{{ order.total|number_format(2, ',', ' ') }} €</span>
+                    <div class="sidebar-body">
+                        <div class="summary-items">
+                            <div class="summary-item">
+                                <span class="summary-label">
+                                    <i class="fas fa-box me-2 text-info"></i>Articles:
+                                </span>
+                                <span class="summary-value">{{ order.orderItems|length }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">
+                                    <i class="fas fa-user me-2 text-success"></i>Client:
+                                </span>
+                                <span class="summary-value">{{ order.user.firstName }} {{ order.user.lastName }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">
+                                    <i class="fas fa-calendar me-2 text-warning"></i>Date:
+                                </span>
+                                <span class="summary-value">{{ order.createdAt|date('d/m/Y') }}</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-item total">
+                                <span class="summary-label">
+                                    <i class="fas fa-calculator me-2 text-primary"></i>Total:
+                                </span>
+                                <span class="summary-value total-amount">{{ (order.total * 1.19)|number_format(0, ',', ' ') }} DT</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Addresses (Read-only) -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
+                <!-- Enhanced Addresses -->
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
                         <h5 class="mb-0 fw-600">
                             <i class="fas fa-map-marker-alt me-2 text-primary"></i>
                             Adresses
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-4">
-                            <h6 class="fw-600 mb-2">
-                                <i class="fas fa-truck me-2 text-success"></i>
-                                Adresse de livraison
-                            </h6>
-                            <p class="text-muted mb-0 small">{{ order.shippingAddress }}</p>
+                    <div class="sidebar-body">
+                        <!-- Shipping Address -->
+                        <div class="address-section mb-4">
+                            <div class="address-header">
+                                <div class="address-icon shipping">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <h6 class="fw-600 mb-1">Adresse de livraison</h6>
+                            </div>
+                            <div class="address-content">
+                                {% if order.shippingAddress %}
+                                    {% set addressLines = order.shippingAddress|split('\n') %}
+                                    {% for line in addressLines %}
+                                        {% if loop.first %}
+                                            <div class="address-line name">
+                                                <i class="fas fa-user me-2"></i>
+                                                <strong>{{ line }}</strong>
+                                            </div>
+                                        {% elseif 'Tél:' in line %}
+                                            <div class="address-line phone">
+                                                <i class="fas fa-phone me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% elseif line|length <= 10 and (' ' in line) %}
+                                            <div class="address-line city">
+                                                <i class="fas fa-map-pin me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="address-line street">
+                                                <i class="fas fa-home me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted mb-0 small">Aucune adresse de livraison</p>
+                                {% endif %}
+                            </div>
                         </div>
-                        <hr>
-                        <div>
-                            <h6 class="fw-600 mb-2">
-                                <i class="fas fa-file-invoice me-2 text-info"></i>
-                                Adresse de facturation
-                            </h6>
-                            <p class="text-muted mb-0 small">{{ order.billingAddress }}</p>
+
+                        <!-- Billing Address -->
+                        <div class="address-section">
+                            <div class="address-header">
+                                <div class="address-icon billing">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <h6 class="fw-600 mb-1">Adresse de facturation</h6>
+                            </div>
+                            <div class="address-content">
+                                {% if order.billingAddress and order.billingAddress != order.shippingAddress %}
+                                    {% set addressLines = order.billingAddress|split('\n') %}
+                                    {% for line in addressLines %}
+                                        {% if loop.first %}
+                                            <div class="address-line name">
+                                                <i class="fas fa-user me-2"></i>
+                                                <strong>{{ line }}</strong>
+                                            </div>
+                                        {% elseif 'Tél:' in line %}
+                                            <div class="address-line phone">
+                                                <i class="fas fa-phone me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% elseif line|length <= 10 and (' ' in line) %}
+                                            <div class="address-line city">
+                                                <i class="fas fa-map-pin me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="address-line street">
+                                                <i class="fas fa-home me-2"></i>
+                                                <span>{{ line }}</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="same-address">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        <span class="text-muted">Identique à l'adresse de livraison</span>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="alert alert-info mt-3 mb-0">
-                            <i class="fas fa-lock me-2"></i>
-                            <small>Les adresses ne peuvent pas être modifiées</small>
+
+                        <div class="address-lock-notice">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-lock me-2"></i>
+                                <small>Les adresses ne peuvent pas être modifiées</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -155,12 +320,297 @@
     </div>
 
     <style>
+        /* Edit Header */
+        .edit-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .edit-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .edit-header .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Edit Form Card */
+        .edit-form-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-subtitle {
+            margin-top: 10px;
+        }
+
+        .form-body {
+            padding: 40px;
+        }
+
+        /* Status Selection */
+        .status-selection {
+            margin-bottom: 40px;
+        }
+
+        .status-options {
+            margin-top: 20px;
+        }
+
+        .status-option {
+            height: 100%;
+        }
+
+        .status-btn {
+            width: 100%;
+            height: 140px;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: white;
+        }
+
+        .status-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .btn-check:checked + .status-btn {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .status-content {
+            padding: 20px;
+        }
+
+        .status-content i {
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .status-content h6 {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-content small {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* Sidebar Cards */
+        .sidebar-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .sidebar-body {
+            padding: 25px;
+        }
+
+        /* Current Status */
+        .current-status {
+            padding: 20px 0;
+        }
+
+        .status-icon-large {
+            opacity: 0.8;
+        }
+
+        /* Summary Items */
+        .summary-items {
+            font-size: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 8px 0;
+        }
+
+        .summary-item.total {
+            font-size: 16px;
+            font-weight: 600;
+            padding-top: 15px;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .total-amount {
+            color: #007bff;
+            font-size: 18px;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 20px 0;
+        }
+
+        /* Address Sections */
+        .address-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .address-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .address-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+
+        .address-icon.shipping {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .address-icon.billing {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .address-content {
+            margin-left: 47px;
+        }
+
+        .address-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .address-line.name {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .address-line i {
+            width: 16px;
+            color: #6c757d;
+        }
+
+        .same-address {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 8px;
+            margin-left: -47px;
+        }
+
+        .address-lock-notice {
+            margin-top: 20px;
+        }
+
         .fw-600 {
             font-weight: 600;
         }
 
-        .bg-opacity-10 {
-            --bs-bg-opacity: 0.1;
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .edit-header .d-flex {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .form-body {
+                padding: 20px;
+            }
+
+            .status-btn {
+                height: 120px;
+            }
+
+            .status-content {
+                padding: 15px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            .address-content {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+
+            .same-address {
+                margin-left: 0;
+            }
         }
     </style>
 {% endblock %}

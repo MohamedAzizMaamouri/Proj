@@ -16,7 +16,8 @@ class CategoryController extends AbstractController
     #[Route('/', name: 'app_category_index')]
     public function index(CategoryRepository $categoryRepository): Response
     {
-        $categories = $categoryRepository->findRootCategories();
+        // Show ALL active categories, not just root categories
+        $categories = $categoryRepository->findAllActive();
 
         return $this->render('category/index.html.twig', [
             'categories' => $categories,

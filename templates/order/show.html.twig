@@ -35,9 +35,9 @@
             } %}
 
             <span class="badge bg-{{ statusClass[order.status] ?? 'secondary' }} fs-6 px-3 py-2">
-            <i class="fas fa-circle me-2"></i>
-            {{ statusText[order.status] ?? order.status }}
-        </span>
+                <i class="fas fa-circle me-2"></i>
+                {{ statusText[order.status] ?? order.status }}
+            </span>
         </div>
 
         <div class="row g-4">
@@ -100,40 +100,164 @@
                     </div>
                 </div>
 
-                <!-- Shipping & Billing Addresses -->
+                <!-- Enhanced Shipping & Billing Addresses -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-600">
                             <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                            Adresses
+                            Informations de livraison
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-4">
+                            <!-- Shipping Address -->
                             <div class="col-md-6">
-                                <div class="bg-light rounded p-3">
-                                    <h6 class="fw-600 mb-3">
-                                        <i class="fas fa-shipping-fast me-2 text-primary"></i>
-                                        Adresse de livraison
-                                    </h6>
-                                    {% if order.shippingAddress %}
-                                        <p class="mb-0">{{ order.shippingAddress|nl2br }}</p>
-                                    {% else %}
-                                        <p class="text-muted mb-0">Aucune adresse de livraison</p>
-                                    {% endif %}
+                                <div class="address-card h-100">
+                                    <div class="address-header">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="address-icon shipping">
+                                                <i class="fas fa-shipping-fast"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-600">Adresse de livraison</h6>
+                                                <small class="text-muted">Lieu de réception de votre commande</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="address-content">
+                                        {% if order.shippingAddress %}
+                                            {% set addressLines = order.shippingAddress|split('\n') %}
+                                            {% for line in addressLines %}
+                                                {% if loop.first %}
+                                                    <div class="address-name">
+                                                        <i class="fas fa-user me-2 text-primary"></i>
+                                                        <strong>{{ line }}</strong>
+                                                    </div>
+                                                {% elseif 'Tél:' in line %}
+                                                    <div class="address-phone">
+                                                        <i class="fas fa-phone me-2 text-success"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% elseif line|length == 4 or ' ' in line and line|split(' ')|length == 2 %}
+                                                    <div class="address-city">
+                                                        <i class="fas fa-map-pin me-2 text-warning"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="address-street">
+                                                        <i class="fas fa-home me-2 text-info"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="text-muted">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                Aucune adresse de livraison
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Billing Address -->
                             <div class="col-md-6">
-                                <div class="bg-light rounded p-3">
-                                    <h6 class="fw-600 mb-3">
-                                        <i class="fas fa-file-invoice me-2 text-primary"></i>
-                                        Adresse de facturation
-                                    </h6>
-                                    {% if order.billingAddress %}
-                                        <p class="mb-0">{{ order.billingAddress|nl2br }}</p>
-                                    {% else %}
-                                        <p class="text-muted mb-0">Identique à l'adresse de livraison</p>
-                                    {% endif %}
+                                <div class="address-card h-100">
+                                    <div class="address-header">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="address-icon billing">
+                                                <i class="fas fa-file-invoice"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-600">Adresse de facturation</h6>
+                                                <small class="text-muted">Adresse pour la facturation</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="address-content">
+                                        {% if order.billingAddress and order.billingAddress != order.shippingAddress %}
+                                            {% set addressLines = order.billingAddress|split('\n') %}
+                                            {% for line in addressLines %}
+                                                {% if loop.first %}
+                                                    <div class="address-name">
+                                                        <i class="fas fa-user me-2 text-primary"></i>
+                                                        <strong>{{ line }}</strong>
+                                                    </div>
+                                                {% elseif 'Tél:' in line %}
+                                                    <div class="address-phone">
+                                                        <i class="fas fa-phone me-2 text-success"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% elseif line|length == 4 or ' ' in line and line|split(' ')|length == 2 %}
+                                                    <div class="address-city">
+                                                        <i class="fas fa-map-pin me-2 text-warning"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="address-street">
+                                                        <i class="fas fa-home me-2 text-info"></i>
+                                                        <span>{{ line }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="same-address-notice">
+                                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                                <span class="text-muted">Identique à l'adresse de livraison</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Status -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="delivery-status-icon me-3">
+                                            {% if order.status == 'delivered' %}
+                                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                                            {% elseif order.status == 'shipped' %}
+                                                <i class="fas fa-truck fa-2x text-primary"></i>
+                                            {% elseif order.status == 'processing' %}
+                                                <i class="fas fa-box fa-2x text-info"></i>
+                                            {% else %}
+                                                <i class="fas fa-clock fa-2x text-warning"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-600">
+                                                {% if order.status == 'delivered' %}
+                                                    Commande livrée
+                                                {% elseif order.status == 'shipped' %}
+                                                    En cours de livraison
+                                                {% elseif order.status == 'processing' %}
+                                                    Commande en préparation
+                                                {% else %}
+                                                    Commande en attente
+                                                {% endif %}
+                                            </h6>
+                                            <small class="text-muted">
+                                                {% if order.status == 'delivered' %}
+                                                    Votre commande a été livrée avec succès
+                                                {% elseif order.status == 'shipped' %}
+                                                    Votre commande est en route vers l'adresse de livraison
+                                                {% elseif order.status == 'processing' %}
+                                                    Votre commande est en cours de préparation
+                                                {% else %}
+                                                    Votre commande est en attente de traitement
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ order.createdAt|date('d/m/Y') }}
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -294,6 +418,72 @@
             background-color: rgba(0, 123, 255, 0.05);
         }
 
+        /* Address Cards Styling */
+        .address-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .address-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .address-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .address-icon.shipping {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .address-icon.billing {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .address-content > div {
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .address-name {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .address-street, .address-city, .address-phone {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .same-address-notice {
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .delivery-status-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Timeline Styling */
         .timeline {
             position: relative;
             padding-left: 30px;
@@ -350,6 +540,18 @@
             .card {
                 border: 1px solid #dee2e6 !important;
                 box-shadow: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .address-card {
+                margin-bottom: 20px;
+            }
+
+            .address-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
             }
         }
     </style>

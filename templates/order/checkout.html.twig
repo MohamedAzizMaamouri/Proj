@@ -59,27 +59,95 @@
                     </h4>
 
                     <div class="row g-3">
-                        <div class="col-12">
-                            {{ form_row(form.shippingAddress, {
-                                'label': 'Adresse de livraison complète *',
-                                'attr': {
-                                    'class': 'form-control',
-                                    'rows': 4,
-                                    'placeholder': 'Nom complet\nAdresse complète\nCode postal, Ville\nTéléphone'
-                                },
+                        <div class="col-md-6">
+                            {{ form_row(form.shipping_firstName, {
+                                'label_attr': {'class': 'form-label fw-500'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.shipping_lastName, {
                                 'label_attr': {'class': 'form-label fw-500'}
                             }) }}
                         </div>
                         <div class="col-12">
-                            {{ form_row(form.billingAddress, {
-                                'label': 'Adresse de facturation (si différente)',
-                                'attr': {
-                                    'class': 'form-control',
-                                    'rows': 4,
-                                    'placeholder': 'Laissez vide si identique à l\'adresse de livraison'
-                                },
+                            {{ form_row(form.shipping_address, {
                                 'label_attr': {'class': 'form-label fw-500'}
                             }) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_row(form.shipping_addressComplement, {
+                                'label_attr': {'class': 'form-label fw-500'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.shipping_postalCode, {
+                                'label_attr': {'class': 'form-label fw-500'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.shipping_city, {
+                                'label_attr': {'class': 'form-label fw-500'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.shipping_phone, {
+                                'label_attr': {'class': 'form-label fw-500'}
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Information -->
+                <div class="bg-white shadow-sm p-4 mb-4">
+                    <h4 class="fw-light mb-4">
+                        <i class="fas fa-file-invoice me-2 text-primary"></i>
+                        Adresse de facturation
+                    </h4>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form_widget(form.sameAsBilling) }}
+                            {{ form_label(form.sameAsBilling, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                    </div>
+
+                    <div id="billingAddressFields" style="display: none;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_row(form.billing_firstName, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.billing_lastName, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.billing_address, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.billing_addressComplement, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.billing_postalCode, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.billing_city, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.billing_phone, {
+                                    'label_attr': {'class': 'form-label fw-500'}
+                                }) }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -268,30 +336,92 @@
             cashRadio.addEventListener('change', togglePaymentFields);
             cardRadio.addEventListener('change', togglePaymentFields);
 
-            // Synchroniser les champs d'adresse
-            const shippingTextarea = document.querySelector('textarea[name="order[shippingAddress]"]');
-            const billingTextarea = document.querySelector('textarea[name="order[billingAddress]"]');
+            // Toggle billing address fields
+            const sameAsBillingCheckbox = document.querySelector('input[name="order[sameAsBilling]"]');
+            const billingAddressFields = document.getElementById('billingAddressFields');
 
-            if (shippingTextarea && billingTextarea) {
-                shippingTextarea.addEventListener('input', function() {
-                    if (!billingTextarea.value.trim()) {
-                        billingTextarea.value = this.value;
-                    }
-                });
+            function toggleBillingFields() {
+                if (sameAsBillingCheckbox.checked) {
+                    billingAddressFields.style.display = 'none';
+                    // Clear billing fields when hidden
+                    billingAddressFields.querySelectorAll('input').forEach(input => {
+                        input.value = '';
+                    });
+                } else {
+                    billingAddressFields.style.display = 'block';
+                }
+            }
+
+            // Initial state
+            toggleBillingFields();
+
+            sameAsBillingCheckbox.addEventListener('change', toggleBillingFields);
+
+            // Auto-fill user data in shipping fields
+            const userFirstName = "{{ app.user.firstName }}";
+            const userLastName = "{{ app.user.lastName }}";
+
+            if (userFirstName) {
+                document.querySelector('input[name="order[shipping_firstName]"]').value = userFirstName;
+            }
+            if (userLastName) {
+                document.querySelector('input[name="order[shipping_lastName]"]').value = userLastName;
             }
 
             // Form validation enhancement
             const form = document.querySelector('form');
             form.addEventListener('submit', function(e) {
-                const shippingAddress = shippingTextarea.value.trim();
+                const requiredFields = [
+                    'order[shipping_firstName]',
+                    'order[shipping_lastName]',
+                    'order[shipping_address]',
+                    'order[shipping_postalCode]',
+                    'order[shipping_city]',
+                    'order[shipping_phone]'
+                ];
 
-                if (!shippingAddress) {
+                let hasErrors = false;
+
+                requiredFields.forEach(fieldName => {
+                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        hasErrors = true;
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                });
+
+                // Validate billing fields if not same as shipping
+                if (!sameAsBillingCheckbox.checked) {
+                    const billingRequiredFields = [
+                        'order[billing_firstName]',
+                        'order[billing_lastName]',
+                        'order[billing_address]',
+                        'order[billing_postalCode]',
+                        'order[billing_city]',
+                        'order[billing_phone]'
+                    ];
+
+                    billingRequiredFields.forEach(fieldName => {
+                        const field = document.querySelector(`input[name="${fieldName}"]`);
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            hasErrors = true;
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+                }
+
+                if (hasErrors) {
                     e.preventDefault();
-                    shippingTextarea.classList.add('is-invalid');
-                    shippingTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    shippingTextarea.focus();
-                } else {
-                    shippingTextarea.classList.remove('is-invalid');
+                    // Scroll to first error
+                    const firstError = document.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
                 }
             });
         });
@@ -313,6 +443,14 @@
         .is-invalid {
             border-color: #dc3545 !important;
             box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .fw-500 {
+            font-weight: 500;
+        }
+
+        .fw-600 {
+            font-weight: 600;
         }
     </style>
 {% endblock %}

@@ -39,6 +39,36 @@ class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Build shipping address from form fields
+            $shippingAddress = $this->buildAddressString([
+                'firstName' => $form->get('shipping_firstName')->getData(),
+                'lastName' => $form->get('shipping_lastName')->getData(),
+                'address' => $form->get('shipping_address')->getData(),
+                'addressComplement' => $form->get('shipping_addressComplement')->getData(),
+                'postalCode' => $form->get('shipping_postalCode')->getData(),
+                'city' => $form->get('shipping_city')->getData(),
+                'phone' => $form->get('shipping_phone')->getData(),
+            ]);
+
+            // Build billing address
+            $sameAsBilling = $form->get('sameAsBilling')->getData();
+            if ($sameAsBilling) {
+                $billingAddress = $shippingAddress;
+            } else {
+                $billingAddress = $this->buildAddressString([
+                    'firstName' => $form->get('billing_firstName')->getData(),
+                    'lastName' => $form->get('billing_lastName')->getData(),
+                    'address' => $form->get('billing_address')->getData(),
+                    'addressComplement' => $form->get('billing_addressComplement')->getData(),
+                    'postalCode' => $form->get('billing_postalCode')->getData(),
+                    'city' => $form->get('billing_city')->getData(),
+                    'phone' => $form->get('billing_phone')->getData(),
+                ]);
+            }
+
+            $order->setShippingAddress($shippingAddress);
+            $order->setBillingAddress($billingAddress);
+
             $this->orderService->createOrderFromCart($cart, $order);
 
             $this->addFlash('success', 'Votre commande a été passée avec succès !');
@@ -50,6 +80,38 @@ class OrderController extends AbstractController
             'cart' => $cart,
             'form' => $form->createView(),
         ]);
+    }
+
+    private function buildAddressString(array $addressData): string
+    {
+        $parts = [];
+
+        // Full name
+        if ($addressData['firstName'] && $addressData['lastName']) {
+            $parts[] = trim($addressData['firstName'] . ' ' . $addressData['lastName']);
+        }
+
+        // Address
+        if ($addressData['address']) {
+            $parts[] = $addressData['address'];
+        }
+
+        // Address complement
+        if ($addressData['addressComplement']) {
+            $parts[] = $addressData['addressComplement'];
+        }
+
+        // Postal code and city
+        if ($addressData['postalCode'] && $addressData['city']) {
+            $parts[] = $addressData['postalCode'] . ' ' . $addressData['city'];
+        }
+
+        // Phone
+        if ($addressData['phone']) {
+            $parts[] = 'Tél: ' . $addressData['phone'];
+        }
+
+        return implode("\n", $parts);
     }
 
     #[Route('/confirmation/{id}', name: 'app_order_confirmation')]

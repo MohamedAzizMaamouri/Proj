@@ -1,68 +1,439 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Commandes - WatchStore{% endblock %}
+{% block title %}Mes Commandes - ENZO Collection{% endblock %}
 
 {% block body %}
     <div class="container py-5">
-        <h1 class="mb-4"><i class="fas fa-history me-2"></i>Mes Commandes</h1>
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="display-6 fw-light mb-2">
+                    <i class="fas fa-history me-3 text-primary"></i>
+                    Mes Commandes
+                </h1>
+                <p class="text-muted mb-0">Consultez l'historique de vos commandes et leur statut</p>
+            </div>
+            <div>
+                <a href="{{ path('app_home') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i>Accueil
+                </a>
+            </div>
+        </div>
 
         {% if orders is empty %}
+            <!-- Empty State -->
             <div class="text-center py-5">
-                <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                <h3>Aucune commande</h3>
-                <p class="text-muted">Vous n'avez pas encore passé de commande</p>
-                <a href="{{ path('app_product_index') }}" class="btn btn-primary">
-                    <i class="fas fa-shopping-cart me-2"></i>Découvrir nos produits
+                <div class="empty-state-icon mb-4">
+                    <i class="fas fa-shopping-bag fa-4x text-muted"></i>
+                </div>
+                <h3 class="fw-light mb-3">Aucune commande trouvée</h3>
+                <p class="text-muted mb-4">Vous n'avez pas encore passé de commande sur notre boutique</p>
+                <a href="{{ path('app_product_index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-cart me-2"></i>Découvrir nos montres
                 </a>
             </div>
         {% else %}
-            {% for order in orders %}
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <div class="row align-items-center">
-                            <div class="col-md-3">
-                                <strong>Commande #{{ order.id }}</strong>
-                            </div>
-                            <div class="col-md-3">
-                                {{ order.createdAt|date('d/m/Y à H:i') }}
-                            </div>
-                            <div class="col-md-3">
-                                <span class="badge bg-{{ order.status == 'pending' ? 'warning' : (order.status == 'completed' ? 'success' : 'info') }}">
-                                    {{ order.status|title }}
-                                </span>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <strong class="text-primary">{{ order.total|number_format(2, ',', ' ') }} €</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h6>Articles ({{ order.orderItems|length }})</h6>
-                                {% for item in order.orderItems %}
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="flex-grow-1">
-                                            <strong>{{ item.product.name }}</strong>
-                                            <small class="text-muted d-block">{{ item.product.brand }} - Qté: {{ item.quantity }}</small>
+            <!-- Orders List -->
+            <div class="row g-4">
+                {% for order in orders %}
+                    <div class="col-12">
+                        <div class="order-card">
+                            <!-- Order Header -->
+                            <div class="order-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <div class="order-number">
+                                            <i class="fas fa-receipt me-2 text-primary"></i>
+                                            <strong>Commande #{{ order.id }}</strong>
                                         </div>
-                                        <span>{{ item.subTotal|number_format(2, ',', ' ') }} €</span>
+                                        <small class="text-muted">{{ order.createdAt|date('d/m/Y à H:i') }}</small>
                                     </div>
-                                {% endfor %}
+                                    <div class="col-md-3">
+                                        <div class="order-status">
+                                            {% set statusClass = {
+                                                'pending': 'warning',
+                                                'processing': 'info',
+                                                'shipped': 'primary',
+                                                'delivered': 'success',
+                                                'cancelled': 'danger'
+                                            } %}
+                                            {% set statusText = {
+                                                'pending': 'En attente',
+                                                'processing': 'En cours',
+                                                'shipped': 'Expédiée',
+                                                'delivered': 'Livrée',
+                                                'cancelled': 'Annulée'
+                                            } %}
+                                            {% set statusIcon = {
+                                                'pending': 'clock',
+                                                'processing': 'cog',
+                                                'shipped': 'truck',
+                                                'delivered': 'check-circle',
+                                                'cancelled': 'times-circle'
+                                            } %}
+
+                                            <span class="badge bg-{{ statusClass[order.status] ?? 'secondary' }} px-3 py-2">
+                                                <i class="fas fa-{{ statusIcon[order.status] ?? 'question' }} me-1"></i>
+                                                {{ statusText[order.status] ?? order.status }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="order-items-count">
+                                            <i class="fas fa-box me-2 text-info"></i>
+                                            <span>{{ order.orderItems|length }} article{{ order.orderItems|length > 1 ? 's' : '' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-md-end">
+                                        <div class="order-total">
+                                            <strong class="text-primary fs-5">{{ (order.total * 1.19)|number_format(0, ',', ' ') }} DT</strong>
+                                            <small class="text-muted d-block">TTC</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <h6>Livraison</h6>
-                                <p class="small text-muted mb-0">{{ order.shippingAddress|nl2br }}</p>
+
+                            <!-- Order Content -->
+                            <div class="order-content">
+                                <div class="row g-4">
+                                    <!-- Order Items -->
+                                    <div class="col-lg-8">
+                                        <h6 class="fw-600 mb-3">
+                                            <i class="fas fa-list me-2 text-primary"></i>
+                                            Articles commandés
+                                        </h6>
+                                        <div class="order-items">
+                                            {% for item in order.orderItems %}
+                                                <div class="order-item">
+                                                    <div class="d-flex align-items-center">
+                                                        {% if item.product.image %}
+                                                            <img src="{{ asset('uploads/images/' ~ item.product.image) }}"
+                                                                 class="order-item-image me-3"
+                                                                 alt="{{ item.product.name }}">
+                                                        {% else %}
+                                                            <div class="order-item-placeholder me-3">
+                                                                <i class="fas fa-clock text-muted"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1 fw-600">{{ item.product.name }}</h6>
+                                                            <div class="item-details">
+                                                                <span class="badge bg-light text-dark me-2">{{ item.product.brand }}</span>
+                                                                <span class="text-muted">Qté: {{ item.quantity }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <div class="item-price">
+                                                                <strong>{{ item.subTotal|number_format(0, ',', ' ') }} DT</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Delivery Information -->
+                                    <div class="col-lg-4">
+                                        <h6 class="fw-600 mb-3">
+                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                            Informations de livraison
+                                        </h6>
+                                        <div class="delivery-info">
+                                            {% if order.shippingAddress %}
+                                                {% set addressLines = order.shippingAddress|split('\n') %}
+                                                <div class="delivery-address">
+                                                    {% for line in addressLines %}
+                                                        {% if loop.first %}
+                                                            <div class="delivery-name">
+                                                                <i class="fas fa-user me-2 text-primary"></i>
+                                                                <strong>{{ line }}</strong>
+                                                            </div>
+                                                        {% elseif 'Tél:' in line %}
+                                                            <div class="delivery-phone">
+                                                                <i class="fas fa-phone me-2 text-success"></i>
+                                                                <small>{{ line }}</small>
+                                                            </div>
+                                                        {% elseif line|length <= 10 and (' ' in line) %}
+                                                            <div class="delivery-city">
+                                                                <i class="fas fa-map-pin me-2 text-warning"></i>
+                                                                <small>{{ line }}</small>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="delivery-street">
+                                                                <i class="fas fa-home me-2 text-info"></i>
+                                                                <small>{{ line }}</small>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="text-muted">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <small>Adresse non disponible</small>
+                                                </div>
+                                            {% endif %}
+
+                                            <!-- Delivery Status -->
+                                            <div class="delivery-status mt-3">
+                                                {% if order.status == 'delivered' %}
+                                                    <div class="status-delivered">
+                                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                                        <small class="text-success fw-600">Livré</small>
+                                                    </div>
+                                                {% elseif order.status == 'shipped' %}
+                                                    <div class="status-shipped">
+                                                        <i class="fas fa-truck me-2 text-primary"></i>
+                                                        <small class="text-primary fw-600">En cours de livraison</small>
+                                                    </div>
+                                                {% elseif order.status == 'processing' %}
+                                                    <div class="status-processing">
+                                                        <i class="fas fa-cog fa-spin me-2 text-info"></i>
+                                                        <small class="text-info fw-600">En préparation</small>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="status-pending">
+                                                        <i class="fas fa-clock me-2 text-warning"></i>
+                                                        <small class="text-warning fw-600">En attente</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order Footer -->
+                            <div class="order-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="order-date">
+                                        <i class="fas fa-calendar me-2 text-muted"></i>
+                                        <small class="text-muted">Commandé le {{ order.createdAt|date('d/m/Y à H:i') }}</small>
+                                    </div>
+                                    <div class="order-actions">
+                                        <a href="{{ path('app_order_show', {id: order.id}) }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>Voir les détails
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <a href="{{ path('app_order_show', {id: order.id}) }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-eye me-1"></i>Voir les détails
-                        </a>
-                    </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
+
+            <!-- Pagination or Load More (if needed) -->
+            <div class="text-center mt-5">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Vous avez {{ orders|length }} commande{{ orders|length > 1 ? 's' : '' }} au total
+                </p>
+            </div>
         {% endif %}
     </div>
+
+    <script>
+        function trackOrder(orderId) {
+            // Placeholder for order tracking functionality
+            alert('Fonctionnalité de suivi en cours de développement pour la commande #' + orderId);
+        }
+    </script>
+
+    <style>
+        .fw-600 {
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state-icon {
+            opacity: 0.6;
+        }
+
+        /* Order Cards */
+        .order-card {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .order-number {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .order-status .badge {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .order-items-count {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .order-total {
+            text-align: right;
+        }
+
+        .order-content {
+            padding: 20px;
+        }
+
+        /* Order Items */
+        .order-items {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .order-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .order-item-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-details {
+            margin-top: 5px;
+        }
+
+        .item-price {
+            font-size: 14px;
+        }
+
+        /* Delivery Information */
+        .delivery-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .delivery-address > div {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .delivery-name {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .delivery-street, .delivery-city, .delivery-phone {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .delivery-status {
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Order Footer */
+        .order-footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .order-date {
+            font-size: 13px;
+        }
+
+        .order-actions .btn {
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .order-header .row > div {
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
+            .order-header .row > div:last-child {
+                margin-bottom: 0;
+            }
+
+            .order-content .row {
+                flex-direction: column-reverse;
+            }
+
+            .delivery-info {
+                margin-bottom: 20px;
+            }
+
+            .order-footer {
+                text-align: center;
+            }
+
+            .order-footer .d-flex {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* Status Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-processing i {
+            animation: pulse 2s infinite;
+        }
+
+        /* Scrollbar Styling */
+        .order-items::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .order-items::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .order-items::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .order-items::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
 {% endblock %}
