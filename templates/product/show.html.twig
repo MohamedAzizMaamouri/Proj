@@ -1,199 +1,555 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Project Collection - Montres de Luxe{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⌚</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{% block title %}{{ product.name }} - ENZO Collection{% endblock %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-{% block categories_section %}
-    {# Override to prevent duplication #}
-{% endblock %}
+    {% block stylesheets %}
+        <style>
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #f8f9fa;
+                --accent-color: #6c757d;
+                --text-dark: #212529;
+                --text-light: #6c757d;
+            }
 
-{% block body %}
-    <div class="container py-5">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a></li>
-                <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}" class="text-decoration-none">Montres</a></li>
-                {% if product.category %}
-                    <li class="breadcrumb-item"><a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="text-decoration-none">{{ product.category.name }}</a></li>
-                {% endif %}
-                <li class="breadcrumb-item active">{{ product.name }}</li>
-            </ol>
-        </nav>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-        <div class="row g-5">
-            <!-- Product Image -->
-            <div class="col-lg-6">
-                <div class="position-relative">
-                    {% if product.image %}
-                        <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid w-100 shadow-lg" alt="{{ product.name }}" style="border-radius: 8px;">
-                    {% else %}
-                        <div class="bg-light d-flex align-items-center justify-content-center shadow-lg" style="height: 600px; border-radius: 8px;">
-                            <i class="fas fa-clock fa-5x text-muted"></i>
-                        </div>
-                    {% endif %}
+            body {
+                font-family: 'Inter', sans-serif;
+                line-height: 1.6;
+                color: var(--text-dark);
+            }
 
-                    <!-- Stock Badge -->
-                    {% if product.stock <= 5 and product.stock > 0 %}
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <span class="badge bg-warning text-dark fs-6">Dernières pièces</span>
-                        </div>
-                    {% elseif product.stock == 0 %}
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <span class="badge bg-danger fs-6">Rupture de stock</span>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            /* Top Bar */
+            .top-bar {
+                background: var(--primary-color);
+                color: white;
+                font-size: 13px;
+                padding: 8px 0;
+            }
 
-            <!-- Product Details -->
-            <div class="col-lg-6">
-                <div class="mb-3">
-                    <span class="badge bg-dark text-uppercase">{{ product.brand }}</span>
-                    {% if product.category %}
-                        <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="badge bg-light text-dark text-decoration-none ms-2">
-                            {{ product.category.name }}
-                        </a>
-                    {% endif %}
-                </div>
+            .top-bar a {
+                color: white;
+                text-decoration: none;
+            }
 
-                <h1 class="display-5 fw-light mb-3">{{ product.name }}</h1>
-                <p class="text-muted fs-5 mb-4">{{ product.model }}</p>
+            .top-bar a:hover {
+                color: #ccc;
+            }
 
-                <div class="mb-4">
-                    <span class="display-6 fw-bold text-dark">{{ product.price|number_format(0, ',', ' ') }} DT</span>
-                </div>
+            /* Main Header */
+            .main-header {
+                background: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
 
-                <div class="mb-4">
-                    <h5 class="fw-600 mb-3">Description</h5>
-                    <p class="text-muted lh-lg">{{ product.description }}</p>
-                </div>
+            .logo {
+                font-weight: 700;
+                font-size: 24px;
+                color: var(--primary-color);
+                text-decoration: none;
+                letter-spacing: 2px;
+            }
 
-                <!-- Product Specifications -->
-                <div class="mb-4">
-                    <h5 class="fw-600 mb-3">Spécifications</h5>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between border-bottom pb-2">
-                                <span class="text-muted">Marque:</span>
-                                <span class="fw-500">{{ product.brand }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between border-bottom pb-2">
-                                <span class="text-muted">Modèle:</span>
-                                <span class="fw-500">{{ product.model }}</span>
-                            </div>
-                        </div>
-                        {% if product.category %}
-                            <div class="col-6">
-                                <div class="d-flex justify-content-between border-bottom pb-2">
-                                    <span class="text-muted">Catégorie:</span>
-                                    <span class="fw-500">{{ product.category.name }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between border-bottom pb-2">
-                                <span class="text-muted">Stock:</span>
-                                {% if product.stock > 0 %}
-                                    <span class="text-success fw-500">{{ product.stock }} disponible(s)</span>
-                                {% else %}
-                                    <span class="text-danger fw-500">Rupture de stock</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between border-bottom pb-2">
-                                <span class="text-muted">Ajouté le:</span>
-                                <span class="fw-500">{{ product.createdAt|date('d/m/Y') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            .main-nav {
+                list-style: none;
+                display: flex;
+                gap: 40px;
+                margin: 0;
+                padding: 0;
+            }
 
-                <!-- Add to Cart Section -->
-                {% if app.user %}
-                    {% if product.stock > 0 %}
-                        <div class="bg-light p-4 mb-4" style="border-radius: 8px;">
-                            <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}">
-                                <div class="row g-3 align-items-end">
-                                    <div class="col-auto">
-                                        <label for="quantity" class="form-label fw-500">Quantité</label>
-                                        <select class="form-select" id="quantity" name="quantity" style="width: 100px;">
-                                            {% for i in 1..min(5, product.stock) %}
-                                                <option value="{{ i }}">{{ i }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col">
-                                        <button type="submit" class="btn btn-dark btn-lg w-100">
-                                            <i class="fas fa-cart-plus me-2"></i>Ajouter au Panier
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Ce produit est actuellement en rupture de stock.
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <a href="{{ path('app_login') }}" class="alert-link fw-500">Connectez-vous</a> pour ajouter ce produit à votre panier.
-                    </div>
-                {% endif %}
+            .main-nav a {
+                color: var(--text-dark);
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 14px;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                transition: color 0.3s ease;
+            }
 
-                <!-- Product Features -->
-                <div class="mt-4">
-                    <h5 class="fw-600 mb-3">Caractéristiques</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Mouvement automatique suisse</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Boîtier en acier inoxydable</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Verre saphir anti-reflet</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Étanchéité 100m</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Garantie internationale 2 ans</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check text-success me-2"></i>
-                                <span class="small">Livraison gratuite</span>
-                            </div>
-                        </div>
-                    </div>
+            .main-nav a:hover {
+                color: var(--accent-color);
+            }
+
+            /* Bootstrap Dropdown Styles */
+            .main-nav .dropdown-menu {
+                background: white;
+                border: none;
+                border-radius: 0;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                padding: 15px 0;
+                margin-top: 10px;
+                min-width: 220px;
+            }
+
+            .main-nav .dropdown-item {
+                color: var(--text-dark) !important;
+                padding: 8px 20px;
+                font-size: 13px;
+                font-weight: 400;
+                text-transform: none;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+            }
+
+            .main-nav .dropdown-item:hover {
+                background: var(--secondary-color);
+                color: var(--primary-color) !important;
+                padding-left: 25px;
+            }
+
+            .main-nav .dropdown-divider {
+                margin: 10px 20px;
+                border-color: #eee;
+            }
+
+            .main-nav .dropdown-toggle::after {
+                display: none;
+            }
+
+            .header-icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .header-icons a {
+                color: var(--text-dark);
+                font-size: 18px;
+                text-decoration: none;
+                position: relative;
+            }
+
+            .cart-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: var(--primary-color);
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+            }
+
+            /* Hero Section */
+            .hero-section {
+                position: relative;
+                height: 70vh;
+                background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .hero-content {
+                text-align: center;
+                z-index: 2;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+                font-weight: 300;
+                color: var(--text-dark);
+                margin-bottom: 1rem;
+                letter-spacing: 2px;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+                color: var(--text-light);
+                margin-bottom: 2rem;
+                font-weight: 400;
+            }
+
+            .btn-primary-custom {
+                background: var(--primary-color);
+                border: 2px solid var(--primary-color);
+                color: white;
+                padding: 12px 30px;
+                font-weight: 500;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn-primary-custom:hover {
+                background: transparent;
+                color: var(--primary-color);
+            }
+
+            /* Product Cards */
+            .product-card {
+                border: none;
+                transition: all 0.3s ease;
+                background: white;
+                border-radius: 0;
+                overflow: hidden;
+            }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+            .product-image {
+                width: 100%;
+                height: 300px;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .product-card:hover .product-image {
+                transform: scale(1.05);
+            }
+
+            .product-info {
+                padding: 25px;
+            }
+
+            .product-brand {
+                font-size: 12px;
+                color: var(--text-light);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 5px;
+            }
+
+            .product-name {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--text-dark);
+                margin-bottom: 10px;
+            }
+
+            .product-price {
+                font-size: 20px;
+                font-weight: 700;
+                color: var(--primary-color);
+            }
+
+            /* Category Cards */
+            .category-card {
+                border: none;
+                transition: all 0.3s ease;
+                background: white;
+                border-radius: 0;
+                overflow: hidden;
+                position: relative;
+                height: 350px;
+            }
+
+            .category-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+            .category-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .category-card:hover .category-image {
+                transform: scale(1.05);
+            }
+
+            .category-overlay {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(transparent, rgba(0,0,0,0.8));
+                color: white;
+                padding: 30px 20px 20px;
+                text-align: center;
+            }
+
+            .category-name {
+                font-size: 20px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                letter-spacing: 1px;
+            }
+
+            .category-description {
+                font-size: 14px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+
+            .category-link {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+
+            /* Footer */
+            .main-footer {
+                background: var(--primary-color);
+                color: white;
+                padding: 60px 0 30px;
+                margin-top: 80px;
+            }
+
+            .footer-section h5 {
+                font-weight: 600;
+                margin-bottom: 20px;
+                font-size: 16px;
+            }
+
+            .footer-section ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .footer-section ul li {
+                margin-bottom: 8px;
+            }
+
+            .footer-section ul li a {
+                color: #ccc;
+                text-decoration: none;
+                font-size: 14px;
+                transition: color 0.3s ease;
+            }
+
+            .footer-section ul li a:hover {
+                color: white;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .main-nav {
+                    display: none;
+                }
+
+                .hero-title {
+                    font-size: 2.5rem;
+                }
+
+                .top-bar {
+                    display: none;
+                }
+            }
+
+            /* Flash Messages */
+            .alert {
+                border-radius: 0;
+                border: none;
+                font-weight: 500;
+            }
+
+            /* Forms */
+            .form-control {
+                border-radius: 0;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+
+            .form-control:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.1);
+            }
+
+            .btn {
+                border-radius: 0;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+        </style>
+    {% endblock %}
+</head>
+<body>
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex gap-4">
+                    <span><i class="fas fa-phone me-2"></i>(+216) 20 878 656</span>
+                    <span><i class="fas fa-envelope me-2"></i>contact@NewProj.com</span>
+                    <span><i class="fas fa-truck me-2"></i>Livraison dans toute la Tunisie</span>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Related Products -->
-        {% if product.category %}
-            <section class="mt-5 pt-5 border-top">
-                <div class="text-center mb-5">
-                    <h3 class="fw-light">Autres montres dans {{ product.category.name }}</h3>
-                </div>
-                <div class="text-center">
-                    <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="btn-primary-custom">
-                        Voir toute la catégorie {{ product.category.name }}
+<!-- Main Header -->
+<header class="main-header">
+    <div class="container">
+        <div class="row align-items-center py-3">
+            <div class="col-md-3">
+                <a href="{{ path('app_home') }}" class="logo">
+                    Project<br>
+                    <small style="font-size: 12px; font-weight: 400; letter-spacing: 3px;">COLLECTION</small>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <nav>
+                    <ul class="main-nav justify-content-center">
+                        <li><a href="{{ path('app_home') }}">Accueil</a></li>
+
+                        {# Dynamic main categories #}
+                        {% for mainCategory in get_main_categories() %}
+                            <li class="dropdown">
+                                <a href="{{ path('app_product_index', {category: mainCategory.slug}) }}" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ mainCategory.name }} <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
+                                </a>
+                                {% if mainCategory.activeChildren|length > 0 %}
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ path('app_product_index', {category: mainCategory.slug}) }}">Tous les {{ mainCategory.name|lower }}</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {% for child in mainCategory.activeChildren %}
+                                            <li><a class="dropdown-item" href="{{ path('app_product_index', {category: mainCategory.slug, subcategory: child.slug}) }}">{{ child.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        {% if not is_granted('ROLE_ADMIN') %}
+                            <li><a href="#contact">Contact</a></li>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <li><a href="{{ path('app_admin_dashboard') }}">Admin</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="col-md-3">
+                <div class="header-icons justify-content-end">
+                    <a href="#" title="Rechercher"><i class="fas fa-search"></i></a>
+
+                    {% if app.user %}
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" title="Mon compte">
+                                <i class="fas fa-user"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ path('app_order_history') }}">Mes commandes</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" title="Se connecter"><i class="fas fa-user"></i></a>
+                    {% endif %}
+
+                    <a href="{{ path('app_cart_index') }}" title="Panier">
+                        <i class="fas fa-shopping-bag"></i>
+                        {% if app.user and app.user.cart and app.user.cart.totalItems > 0 %}
+                            <span class="cart-badge">{{ app.user.cart.totalItems }}</span>
+                        {% else %}
+                            <span class="cart-badge">0</span>
+                        {% endif %}
                     </a>
                 </div>
-            </section>
-        {% endif %}
+            </div>
+        </div>
     </div>
-{% endblock %}
+</header>
+
+<!-- Flash Messages -->
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show m-0" role="alert">
+            <div class="container">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<!-- Main Content -->
+<main>
+    {% block body %}{% endblock %}
+</main>
+
+
+<!-- Footer -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 footer-section">
+                <h5>Project COLLECTION</h5>
+                <p>Votre destination pour les montres de luxe et connectées. Nous proposons une sélection exclusive des plus grandes marques horlogères.</p>
+                <div class="social-links mt-3">
+                    <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="col-md-2 footer-section">
+                <h5>Navigation</h5>
+                <ul>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('app_product_index') }}">Catégories</a></li>
+                    <li><a href="#accessories">Accessoires</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 footer-section">
+                <h5>Service Client</h5>
+                <ul>
+                    <li><a href="#shipping">Livraison</a></li>
+                    <li><a href="#returns">Retours</a></li>
+                    <li><a href="#warranty">Garantie</a></li>
+                    <li><a href="#support">Support</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 footer-section">
+                <h5>Contact</h5>
+                <ul>
+                    <li><i class="fas fa-phone me-2"></i>(+216) 20 878 656</li>
+                    <li><i class="fas fa-envelope me-2"></i>contact@projet-collection.com</li>
+                    <li><i class="fas fa-map-marker-alt me-2"></i>Tunis, Tunisie</li>
+                </ul>
+            </div>
+        </div>
+        <hr class="my-4" style="border-color: #333;">
+        <div class="text-center">
+            <p>&copy; {{ 'now'|date('Y') }} Project Collection. Tous droits réservés.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

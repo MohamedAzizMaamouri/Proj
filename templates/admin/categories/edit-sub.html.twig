@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouvelle Catégorie - Administration{% endblock %}
+{% block title %}Modifier {{ category.name }} - Administration{% endblock %}
 
 {% block categories_section %}
     {# Override to prevent duplication #}
@@ -12,7 +12,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
                 <li class="breadcrumb-item"><a href="{{ path('app_admin_categories') }}">Catégories</a></li>
-                <li class="breadcrumb-item active">Nouvelle</li>
+                <li class="breadcrumb-item active">Modifier {{ category.name }}</li>
             </ol>
         </nav>
 
@@ -20,16 +20,30 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Nouvelle Catégorie</h4>
+                        <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Modifier la Sous-catégorie</h4>
                     </div>
                     <div class="card-body">
+                        {% if category.image %}
+                            <div class="text-center mb-3">
+                                <img src="{{ asset('uploads/categories/' ~ category.image) }}" alt="{{ category.name }}" class="img-thumbnail" style="max-width: 200px;">
+                                <p class="text-muted mt-2">Image actuelle</p>
+                            </div>
+                        {% endif %}
+
                         {{ form_start(form) }}
                         <div class="row g-3">
                             <div class="col-md-6">
                                 {{ form_row(form.name) }}
                             </div>
                             <div class="col-md-6">
+                                {{ form_row(form.parent) }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ form_row(form.imageFile) }}
+                                <small class="text-muted">Laissez vide pour conserver l'image actuelle</small>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.sortOrder) }}
                             </div>
                             <div class="col-12">
                                 {{ form_row(form.description) }}
@@ -42,12 +56,19 @@
                             </div>
                         </div>
 
+                        {% if category.products|length > 0 %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Cette sous-catégorie contient <strong>{{ category.products|length }}</strong> produit(s).
+                            </div>
+                        {% endif %}
+
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{{ path('app_admin_categories') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Créer la Catégorie
+                                <i class="fas fa-save me-2"></i>Sauvegarder
                             </button>
                         </div>
                         {{ form_end(form) }}

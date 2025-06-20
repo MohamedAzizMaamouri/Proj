@@ -156,6 +156,111 @@
                 font-weight: 600;
             }
 
+            /* Search Form Styles */
+            .search-form {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .search-input {
+                border: 1px solid #ddd;
+                border-radius: 25px;
+                padding: 8px 40px 8px 15px;
+                font-size: 14px;
+                width: 200px;
+                transition: all 0.3s ease;
+                background: #f8f9fa;
+            }
+
+            .search-input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                background: white;
+                box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+                width: 250px;
+            }
+
+            .search-input::placeholder {
+                color: #999;
+                font-size: 13px;
+            }
+
+            .search-btn {
+                position: absolute;
+                right: 5px;
+                background: none;
+                border: none;
+                color: var(--text-dark);
+                font-size: 16px;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            .search-btn:hover {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            /* User dropdown styles */
+            .header-icons .dropdown-menu {
+                background: white;
+                border: none;
+                border-radius: 0;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                padding: 15px 0;
+                margin-top: 10px;
+                min-width: 200px;
+            }
+
+            .header-icons .dropdown-item {
+                color: var(--text-dark) !important;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: 400;
+                text-transform: none;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .header-icons .dropdown-item:hover {
+                background: var(--secondary-color);
+                color: var(--primary-color) !important;
+                padding-left: 25px;
+            }
+
+            .header-icons .dropdown-divider {
+                margin: 10px 20px;
+                border-color: #eee;
+            }
+
+            /* Special styling for admin dropdown item - ONLY for normal state */
+            .admin-dropdown-item {
+
+                color: white !important;
+                font-weight: 600 !important;
+            }
+
+            .admin-dropdown-item i {
+                color: black !important;
+            }
+
+            /* Admin item uses the same hover as other items */
+            .admin-dropdown-item:hover {
+                background: var(--secondary-color) !important;
+                color: var(--primary-color) !important;
+                padding-left: 25px !important;
+            }
+
+            .admin-dropdown-item:hover i {
+                color: var(--primary-color) !important;
+            }
+
             /* Hero Section */
             .hero-section {
                 position: relative;
@@ -359,6 +464,29 @@
                 .top-bar {
                     display: none;
                 }
+
+                .search-input {
+                    width: 150px;
+                }
+
+                .search-input:focus {
+                    width: 180px;
+                }
+
+                .header-icons {
+                    gap: 15px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .search-input {
+                    width: 120px;
+                    font-size: 12px;
+                }
+
+                .search-input:focus {
+                    width: 150px;
+                }
             }
 
             /* Flash Messages */
@@ -421,34 +549,44 @@
                 <nav>
                     <ul class="main-nav justify-content-center">
                         <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                Montres <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ path('app_product_index') }}">Toutes les montres</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-de-luxe'}) }}">Montres de Luxe</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-sport'}) }}">Montres Sport</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-habillees'}) }}">Montres Habillées</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'montres-aviateur'}) }}">Montres d'Aviateur</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'chronographes'}) }}">Chronographes</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_category_show', {slug: 'plongee'}) }}">Montres de Plongée</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#accessories">Accessoires</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <li><a href="{{ path('app_admin_dashboard') }}">Admin</a></li>
-                        {% endif %}
+
+                        {# Dynamic main categories #}
+                        {% for mainCategory in get_main_categories() %}
+                            <li class="dropdown">
+                                <a href="{{ path('app_product_index', {category: mainCategory.slug}) }}" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ mainCategory.name }} <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
+                                </a>
+                                {% if mainCategory.activeChildren|length > 0 %}
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ path('app_product_index', {category: mainCategory.slug}) }}">Tous les {{ mainCategory.name|lower }}</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {% for child in mainCategory.activeChildren %}
+                                            <li><a class="dropdown-item" href="{{ path('app_product_index', {category: mainCategory.slug, subcategory: child.slug}) }}">{{ child.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+
+
                     </ul>
                 </nav>
             </div>
 
             <div class="col-md-3">
                 <div class="header-icons justify-content-end">
-                    <a href="#" title="Rechercher"><i class="fas fa-search"></i></a>
+                    <!-- Search Form -->
+                    <form class="search-form" method="GET" action="{{ path('app_product_search') }}">
+                        <input type="text"
+                               name="q"
+                               class="search-input"
+                               placeholder="Rechercher une montre..."
+                               value="{{ app.request.query.get('q') }}"
+                               autocomplete="off">
+                        <button type="submit" class="search-btn" title="Rechercher">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
 
                     {% if app.user %}
                         <div class="dropdown">
@@ -456,9 +594,24 @@
                                 <i class="fas fa-user"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ path('app_order_history') }}">Mes commandes</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_order_history') }}">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        Mes commandes
+                                    </a></li>
+
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item admin-dropdown-item" href="{{ path('app_admin_dashboard') }}">
+                                            <i class="fas fa-cog"></i>
+                                            Administration
+                                        </a></li>
+                                {% endif %}
+
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Déconnexion
+                                    </a></li>
                             </ul>
                         </div>
                     {% else %}
@@ -495,7 +648,6 @@
 <main>
     {% block body %}{% endblock %}
 </main>
-
 
 <!-- Footer -->
 <footer class="main-footer">

@@ -46,12 +46,22 @@ class Category
     #[ORM\Column]
     private ?int $sortOrder = 0;
 
+    // NEW FIELD: Add main category flag
+    #[ORM\Column]
+    private ?bool $isMainCategory = false;
+
+    // NEW FIELD: Add main category type enum
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $mainCategoryType = null;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
         $this->products = new ArrayCollection();
         $this->createdAt = new \DateTime();
     }
+
+    // ... existing methods ...
 
     public function getId(): ?int
     {
@@ -192,6 +202,40 @@ class Category
     {
         $this->sortOrder = $sortOrder;
         return $this;
+    }
+
+    // NEW METHODS for main category functionality
+    public function isMainCategory(): ?bool
+    {
+        return $this->isMainCategory;
+    }
+
+    public function setIsMainCategory(bool $isMainCategory): static
+    {
+        $this->isMainCategory = $isMainCategory;
+        return $this;
+    }
+
+    public function getMainCategoryType(): ?string
+    {
+        return $this->mainCategoryType;
+    }
+
+    public function setMainCategoryType(?string $mainCategoryType): static
+    {
+        $this->mainCategoryType = $mainCategoryType;
+        return $this;
+    }
+
+    // Helper method to get main category types
+    public static function getMainCategoryTypes(): array
+    {
+        return [
+            'homme' => 'Homme',
+            'femme' => 'Femme',
+            'enfant' => 'Enfant',
+            'accessoires' => 'Accessoires'
+        ];
     }
 
     public function __toString(): string

@@ -16,11 +16,10 @@ class CategoryController extends AbstractController
     #[Route('/', name: 'app_category_index')]
     public function index(CategoryRepository $categoryRepository): Response
     {
-        // Show ALL active categories, not just root categories
-        $categories = $categoryRepository->findAllActive();
+        $mainCategories = $categoryRepository->findMainCategories();
 
         return $this->render('category/index.html.twig', [
-            'categories' => $categories,
+            'mainCategories' => $mainCategories,
         ]);
     }
 
@@ -33,18 +32,9 @@ class CategoryController extends AbstractController
             throw $this->createNotFoundException('Catégorie non trouvée');
         }
 
-        $search = $request->query->get('search');
-        $brand = $request->query->get('brand');
+        // Redirect to product index with category filter
+        $queryParams = array_merge($request->query->all(), ['category' => $slug]);
 
-        $products = $productRepository->findByCategory($category, $search, $brand);
-        $brands = $productRepository->findAllBrands();
-
-        return $this->render('category/show.html.twig', [
-            'category' => $category,
-            'products' => $products,
-            'brands' => $brands,
-            'current_search' => $search,
-            'current_brand' => $brand,
-        ]);
+        return $this->redirectToRoute('app_product_index', $queryParams);
     }
 }

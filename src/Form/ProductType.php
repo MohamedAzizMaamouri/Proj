@@ -18,16 +18,19 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 
 class ProductType extends AbstractType
 {
     private ProductRepository $productRepository;
+    private CategoryRepository $categoryRepository;
 
-    public function __construct(ProductRepository $productRepository)
+    public function __construct(ProductRepository $productRepository, CategoryRepository $categoryRepository)
     {
         $this->productRepository = $productRepository;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -70,18 +73,31 @@ class ProductType extends AbstractType
                 'label' => 'Modèle',
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Ex: Submariner 116610LN']
             ])
-            ->add('category', EntityType::class, [
+            ->add('mainCategory', EntityType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
-                'label' => 'Catégorie',
-                'placeholder' => 'Choisissez une catégorie...',
-                'attr' => ['class' => 'form-select'],
+                'label' => 'Catégorie principale',
+                'placeholder' => 'Choisissez une catégorie principale...',
+                'attr' => ['class' => 'form-select', 'onchange' => 'updateSubcategories(this.value)'],
+                'mapped' => false,
                 'query_builder' => function (CategoryRepository $repository) {
                     return $repository->createQueryBuilder('c')
                         ->where('c.isActive = :active')
+                        ->andWhere('c.isMainCategory = :isMain')
                         ->setParameter('active', true)
-                        ->orderBy('c.name', 'ASC');
+                        ->setParameter('isMain', true)
+                        ->orderBy('c.sortOrder', 'ASC')
+                        ->addOrderBy('c.name', 'ASC');
                 },
+                'required' => true
+            ])
+            ->add('category', EntityType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'label' => 'Sous-catégorie',
+                'placeholder' => 'Choisissez d\'abord une catégorie principale...',
+                'attr' => ['class' => 'form-select'],
+                'choices' => [], // Will be populated dynamically
                 'required' => false
             ])
             ->add('stock', IntegerType::class, [
@@ -112,6 +128,52 @@ class ProductType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control', 'accept' => 'image/*']
             ]);
+
+        // Handle dynamic subcategory loading
+        $formModifier = function (FormInterface $form, Category $mainCategory = null) {
+            $subcategories = null === $mainCategory ? [] : $mainCategory->getActiveChildren();
+
+            $form->add('category', EntityType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'label' => 'Sous-catégorie',
+                'placeholder' => $mainCategory ? 'Choisissez une sous-catégorie...' : 'Choisissez d\'abord une catégorie principale...',
+                'attr' => ['class' => 'form-select'],
+                'choices' => $subcategories,
+                'required' => false
+            ]);
+        };
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function (FormEvent $event) use ($formModifier) {
+                $product = $event->getData();
+                $mainCategory = null;
+
+                if ($product && $product->getCategory()) {
+                    if ($product->getCategory()->isMainCategory()) {
+                        $mainCategory = $product->getCategory();
+                    } else {
+                        $mainCategory = $product->getCategory()->getParent();
+                    }
+                }
+
+                $formModifier($event->getForm(), $mainCategory);
+
+                // Set the main category field
+                if ($mainCategory) {
+                    $event->getForm()->get('mainCategory')->setData($mainCategory);
+                }
+            }
+        );
+
+        $builder->get('mainCategory')->addEventListener(
+            FormEvents::POST_SUBMIT,
+            function (FormEvent $event) use ($formModifier) {
+                $mainCategory = $event->getForm()->getData();
+                $formModifier($event->getForm()->getParent(), $mainCategory);
+            }
+        );
 
         // Handle brand selection logic
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {

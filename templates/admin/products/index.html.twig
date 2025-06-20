@@ -25,15 +25,15 @@
     <div class="container py-5">
         <!-- Filters -->
         <div class="row mb-4">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
                 <div class="bg-white p-4 shadow-sm rounded">
                     <h5 class="mb-3">Filtres</h5>
                     <form method="get" class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="search" class="form-label">Recherche</label>
                             <input type="text" class="form-control" id="search" name="search" value="{{ current_search }}" placeholder="Nom ou description...">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="brand" class="form-label">Marque</label>
                             <select class="form-select" id="brand" name="brand">
                                 <option value="">Toutes les marques</option>
@@ -42,11 +42,29 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">Catégorie</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Toutes les catégories</option>
+                                {% for mainCategory in mainCategories %}
+                                    <optgroup label="{{ mainCategory.name }}">
+                                        <option value="{{ mainCategory.slug }}" {{ current_category == mainCategory.slug ? 'selected' : '' }}>
+                                            Tous les {{ mainCategory.name|lower }}
+                                        </option>
+                                        {% for subcategory in mainCategory.activeChildren %}
+                                            <option value="{{ subcategory.slug }}" {{ current_category == subcategory.slug ? 'selected' : '' }}>
+                                                {{ subcategory.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary me-2">
                                 <i class="fas fa-search me-1"></i>Filtrer
                             </button>
-                            {% if current_search or current_brand %}
+                            {% if current_search or current_brand or current_category %}
                                 <a href="{{ path('app_admin_products') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-1"></i>Effacer
                                 </a>
@@ -102,7 +120,12 @@
                                 </td>
                                 <td>
                                     {% if product.category %}
-                                        <span class="badge bg-primary">{{ product.category.name }}</span>
+                                        {% if product.category.parent and product.category.parent.isMainCategory %}
+                                            <span class="badge bg-primary">{{ product.category.parent.name }}</span>
+                                            <br><small class="text-muted">{{ product.category.name }}</small>
+                                        {% else %}
+                                            <span class="badge bg-primary">{{ product.category.name }}</span>
+                                        {% endif %}
                                     {% else %}
                                         <span class="badge bg-secondary">Non catégorisé</span>
                                     {% endif %}

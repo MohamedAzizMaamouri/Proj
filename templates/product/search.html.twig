@@ -1,0 +1,224 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if query %}
+        Résultats pour "{{ query }}" - Project Collection
+    {% else %}
+        Recherche - Project Collection
+    {% endif %}
+{% endblock %}
+
+{% block categories_section %}
+    {# Override to prevent duplication #}
+{% endblock %}
+
+{% block body %}
+    <!-- Page Header -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center">
+                <h1 class="display-4 fw-light mb-3">
+                    {% if query %}
+                        Résultats pour "{{ query }}"
+                    {% else %}
+                        Recherche
+                    {% endif %}
+                </h1>
+                <p class="lead text-muted">
+                    {% if query and total > 0 %}
+                        {{ total }} produit(s) trouvé(s)
+                    {% elseif query %}
+                        Aucun produit trouvé
+                    {% else %}
+                        Recherchez parmi notre collection
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <!-- Search Form -->
+                <div class="bg-white p-4 shadow-sm mb-4">
+                    <h5 class="fw-600 mb-4">Nouvelle recherche</h5>
+                    <form method="get" action="{{ path('app_product_search') }}">
+                        <div class="mb-3">
+                            <input type="text"
+                                   class="form-control"
+                                   name="q"
+                                   value="{{ query }}"
+                                   placeholder="Rechercher une montre..."
+                                   autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Categories Navigation -->
+                <div class="bg-white p-4 shadow-sm mb-4">
+                    <h5 class="fw-600 mb-4">Parcourir par catégorie</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="{{ path('app_product_index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-th-large me-2"></i>Toutes les catégories
+                        </a>
+                        {% for mainCategory in mainCategories %}
+                            <a href="{{ path('app_product_index', {category: mainCategory.slug}) }}"
+                               class="list-group-item list-group-item-action">
+                                {% if mainCategory.mainCategoryType == 'homme' %}
+                                    <i class="fas fa-male me-2"></i>
+                                {% elseif mainCategory.mainCategoryType == 'femme' %}
+                                    <i class="fas fa-female me-2"></i>
+                                {% elseif mainCategory.mainCategoryType == 'enfant' %}
+                                    <i class="fas fa-child me-2"></i>
+                                {% elseif mainCategory.mainCategoryType == 'accessoires' %}
+                                    <i class="fas fa-gem me-2"></i>
+                                {% endif %}
+                                {{ mainCategory.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Results -->
+            <div class="col-lg-9">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_product_index') }}" class="text-decoration-none">Catégories</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            {% if query %}
+                                Recherche: "{{ query }}"
+                            {% else %}
+                                Recherche
+                            {% endif %}
+                        </li>
+                    </ol>
+                </nav>
+
+                {% if not query %}
+                    <!-- No search query -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                        <h3 class="fw-light">Recherchez une montre</h3>
+                        <p class="text-muted">Utilisez la barre de recherche pour trouver la montre parfaite.</p>
+                        <p class="text-muted">Vous pouvez rechercher par nom, marque, modèle ou description.</p>
+                    </div>
+                {% elseif query|length < 2 %}
+                    <!-- Query too short -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-4x text-warning mb-4"></i>
+                        <h3 class="fw-light">Recherche trop courte</h3>
+                        <p class="text-muted">Veuillez saisir au moins 2 caractères pour effectuer une recherche.</p>
+                    </div>
+                {% elseif products is empty %}
+                    <!-- No results -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                        <h3 class="fw-light">Aucun résultat trouvé</h3>
+                        <p class="text-muted">Aucun produit ne correspond à votre recherche "{{ query }}".</p>
+                        <div class="mt-4">
+                            <h5>Suggestions :</h5>
+                            <ul class="list-unstyled text-muted">
+                                <li>• Vérifiez l'orthographe</li>
+                                <li>• Utilisez des mots-clés plus généraux</li>
+                                <li>• Essayez avec le nom de la marque</li>
+                            </ul>
+                        </div>
+                        <a href="{{ path('app_product_index') }}" class="btn btn-primary mt-3">
+                            Voir toutes les montres
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Results found -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-light">{{ total }} résultat(s) trouvé(s)</h2>
+                        <div class="text-muted">
+                            pour "{{ query }}"
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        {% for product in products %}
+                            <div class="col-lg-4 col-md-6">
+                                <div class="product-card">
+                                    <div class="position-relative overflow-hidden">
+                                        {% if product.image %}
+                                            <img src="{{ asset('uploads/images/' ~ product.image) }}" class="product-image" alt="{{ product.name }}">
+                                        {% else %}
+                                            <div class="product-image bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-clock fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+
+                                        <!-- Quick Actions Overlay -->
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center opacity-0 product-overlay">
+                                            <div class="text-center">
+                                                <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-light btn-sm me-2 mb-2">
+                                                    <i class="fas fa-eye me-1"></i>Voir Détails
+                                                </a>
+                                                {% if app.user and product.stock > 0 %}
+                                                    <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-dark btn-sm mb-2">
+                                                            <i class="fas fa-cart-plus me-1"></i>Ajouter
+                                                        </button>
+                                                    </form>
+                                                {% elseif product.stock == 0 %}
+                                                    <button class="btn btn-secondary btn-sm mb-2" disabled>
+                                                        <i class="fas fa-times me-1"></i>Rupture
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Stock Badge -->
+                                        {% if product.stock <= 5 and product.stock > 0 %}
+                                            <div class="position-absolute top-0 end-0 m-3">
+                                                <span class="badge bg-warning text-dark">Dernières pièces</span>
+                                            </div>
+                                        {% elseif product.stock == 0 %}
+                                            <div class="position-absolute top-0 end-0 m-3">
+                                                <span class="badge bg-danger">Rupture</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="product-info text-center">
+                                        <div class="product-brand">{{ product.brand }}</div>
+                                        <h5 class="product-name">{{ product.name }}</h5>
+                                        <div class="product-price">{{ product.price|number_format(0, ',', ' ') }} DT</div>
+                                        <small class="text-muted">{{ product.model }}</small>
+                                        {% if product.category %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-light text-dark">
+                                                    {{ product.category.name }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .product-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .product-card:hover .product-overlay {
+            opacity: 1 !important;
+        }
+    </style>
+{% endblock %}

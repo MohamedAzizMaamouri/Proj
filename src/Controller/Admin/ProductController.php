@@ -10,6 +10,7 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,30 +42,58 @@ class ProductController extends AbstractController
     }
 
     #[Route('/products', name: 'app_admin_products')]
-    public function products(ProductRepository $productRepository, Request $request): Response
+    public function products(ProductRepository $productRepository, CategoryRepository $categoryRepository, Request $request): Response
     {
         $search = $request->query->get('search');
         $category = $request->query->get('category');
         $brand = $request->query->get('brand');
 
-        if ($search || $category || $brand) {
-            $products = $productRepository->findByFilters($search, $brand);
+        $categoryEntity = null;
+        if ($category) {
+            $categoryEntity = $categoryRepository->findBySlug($category);
+        }
+
+        if ($search || $categoryEntity || $brand) {
+            $products = $productRepository->findByFilters($search, $brand, $categoryEntity);
         } else {
             $products = $productRepository->findBy([], ['createdAt' => 'DESC']);
         }
 
         $brands = $productRepository->findAllBrands();
+        $mainCategories = $categoryRepository->findMainCategories();
 
         return $this->render('admin/products/index.html.twig', [
             'products' => $products,
             'brands' => $brands,
+            'mainCategories' => $mainCategories,
             'current_search' => $search,
             'current_brand' => $brand,
+            'current_category' => $category,
         ]);
     }
 
+    #[Route('/products/subcategories/{mainCategoryId}', name: 'app_admin_subcategories', methods: ['GET'])]
+    public function getSubcategories(int $mainCategoryId, CategoryRepository $categoryRepository): JsonResponse
+    {
+        $mainCategory = $categoryRepository->find($mainCategoryId);
+
+        if (!$mainCategory || !$mainCategory->isMainCategory()) {
+            return new JsonResponse([]);
+        }
+
+        $subcategories = [];
+        foreach ($mainCategory->getActiveChildren() as $subcategory) {
+            $subcategories[] = [
+                'id' => $subcategory->getId(),
+                'name' => $subcategory->getName()
+            ];
+        }
+
+        return new JsonResponse($subcategories);
+    }
+
     #[Route('/products/new', name: 'app_admin_product_new')]
-    public function newProduct(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository): Response
+    public function newProduct(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
@@ -80,6 +109,18 @@ class ProductController extends AbstractController
                 }
             } else {
                 $product->setBrand($brandChoice);
+            }
+
+            // Handle category selection
+            $selectedCategory = $form->get('category')->getData();
+            if ($selectedCategory) {
+                $product->setCategory($selectedCategory);
+            } else {
+                // If no subcategory selected, use main category
+                $mainCategory = $form->get('mainCategory')->getData();
+                if ($mainCategory) {
+                    $product->setCategory($mainCategory);
+                }
             }
 
             // Handle image upload
@@ -113,16 +154,18 @@ class ProductController extends AbstractController
         }
 
         $existingBrands = $productRepository->findAllBrands();
+        $mainCategories = $categoryRepository->findMainCategories();
 
         return $this->render('admin/products/new.html.twig', [
             'product' => $product,
             'form' => $form,
             'existing_brands' => $existingBrands,
+            'main_categories' => $mainCategories,
         ]);
     }
 
     #[Route('/products/{id}/edit', name: 'app_admin_product_edit')]
-    public function editProduct(Product $product, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository): Response
+    public function editProduct(Product $product, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
     {
         $form = $this->createForm(ProductType::class, $product);
 
@@ -151,6 +194,18 @@ class ProductController extends AbstractController
                 $product->setBrand($brandChoice);
             }
 
+            // Handle category selection
+            $selectedCategory = $form->get('category')->getData();
+            if ($selectedCategory) {
+                $product->setCategory($selectedCategory);
+            } else {
+                // If no subcategory selected, use main category
+                $mainCategory = $form->get('mainCategory')->getData();
+                if ($mainCategory) {
+                    $product->setCategory($mainCategory);
+                }
+            }
+
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
@@ -177,11 +232,13 @@ class ProductController extends AbstractController
         }
 
         $existingBrands = $productRepository->findAllBrands();
+        $mainCategories = $categoryRepository->findMainCategories();
 
         return $this->render('admin/products/edit.html.twig', [
             'product' => $product,
             'form' => $form,
             'existing_brands' => $existingBrands,
+            'main_categories' => $mainCategories,
         ]);
     }
 

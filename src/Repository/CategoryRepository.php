@@ -13,6 +13,34 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+    // NEW METHOD: Find main categories for navigation
+    public function findMainCategories(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.isMainCategory = :isMain')
+            ->andWhere('c.isActive = :active')
+            ->setParameter('isMain', true)
+            ->setParameter('active', true)
+            ->orderBy('c.sortOrder', 'ASC')
+            ->addOrderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // NEW METHOD: Find categories by main category type
+    public function findByMainCategoryType(string $type): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.mainCategoryType = :type')
+            ->andWhere('c.isActive = :active')
+            ->setParameter('type', $type)
+            ->setParameter('active', true)
+            ->orderBy('c.sortOrder', 'ASC')
+            ->addOrderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findAllActive(): array
     {
         return $this->createQueryBuilder('c')
@@ -90,6 +118,7 @@ class CategoryRepository extends ServiceEntityRepository
             $this->loadChildren($child);
         }
     }
+
     public function findByFilters(?string $search = null, ?string $status = null): array
     {
         $qb = $this->createQueryBuilder('c')

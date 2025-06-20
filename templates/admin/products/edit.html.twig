@@ -48,12 +48,15 @@
                                 {{ form_row(form.model) }}
                             </div>
                             <div class="col-md-6">
-                                {{ form_row(form.category) }}
-                            </div>
-                            <div class="col-md-6">
                                 {{ form_row(form.stock) }}
                             </div>
                             <div class="col-md-6">
+                                {{ form_row(form.mainCategory) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.category) }}
+                            </div>
+                            <div class="col-12">
                                 {{ form_row(form.imageFile) }}
                                 <small class="text-muted">Laissez vide pour conserver l'image actuelle</small>
                             </div>
@@ -98,6 +101,47 @@
             }
         }
 
+        function updateSubcategories(mainCategoryId) {
+            const subcategorySelect = document.querySelector('select[name="product[category]"]');
+            const currentSubcategoryId = subcategorySelect.dataset.currentValue;
+
+            if (!mainCategoryId) {
+                subcategorySelect.innerHTML = '<option value="">Choisissez d\'abord une catégorie principale...</option>';
+                subcategorySelect.disabled = true;
+                return;
+            }
+
+            // Show loading state
+            subcategorySelect.innerHTML = '<option value="">Chargement...</option>';
+            subcategorySelect.disabled = true;
+
+            // Fetch subcategories
+            fetch(`{{ path('app_admin_subcategories', {'mainCategoryId': '__ID__'}) }}`.replace('__ID__', mainCategoryId))
+                .then(response => response.json())
+                .then(subcategories => {
+                    subcategorySelect.innerHTML = '<option value="">Choisissez une sous-catégorie...</option>';
+
+                    subcategories.forEach(subcategory => {
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.textContent = subcategory.name;
+
+                        // Restore previous selection if editing
+                        if (currentSubcategoryId && subcategory.id == currentSubcategoryId) {
+                            option.selected = true;
+                        }
+
+                        subcategorySelect.appendChild(option);
+                    });
+
+                    subcategorySelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching subcategories:', error);
+                    subcategorySelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
+                });
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             const brandChoice = document.querySelector('select[name="product[brandChoice]"]');
@@ -109,6 +153,18 @@
                 if (brandInput && brandInput.value && brandChoice.value === 'new') {
                     document.getElementById('custom-brand-field').style.display = 'block';
                 }
+            }
+
+            const mainCategorySelect = document.querySelector('select[name="product[mainCategory]"]');
+            const subcategorySelect = document.querySelector('select[name="product[category]"]');
+
+            // Store current subcategory value for restoration
+            if (subcategorySelect && subcategorySelect.value) {
+                subcategorySelect.dataset.currentValue = subcategorySelect.value;
+            }
+
+            if (mainCategorySelect && mainCategorySelect.value) {
+                updateSubcategories(mainCategorySelect.value);
             }
         });
     </script>

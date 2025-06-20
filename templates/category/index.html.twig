@@ -19,24 +19,28 @@
 
     <div class="container py-5">
         <div class="row g-4">
-            {% for category in categories %}
+            {% for category in mainCategories %}
                 <div class="col-md-4">
-                    <a href="{{ path('app_category_show', {slug: category.slug}) }}" class="text-decoration-none">
+                    <a href="{{ path('app_product_index', {category: category.slug}) }}" class="text-decoration-none">
                         <div class="category-card h-100">
                             {% if category.image %}
                                 <img src="{{ asset('uploads/categories/' ~ category.image) }}" class="category-image" alt="{{ category.name }}">
                             {% else %}
-                                <div class="category-image bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                    {% if 'luxe' in category.slug %}
+                                <div class="category-image bg-gradient d-flex align-items-center justify-content-center"
+                                     style="background: linear-gradient(135deg,
+                                         {% if category.mainCategoryType == 'homme' %}#667eea 0%, #764ba2 100%
+                                         {% elseif category.mainCategoryType == 'femme' %}#f093fb 0%, #f5576c 100%
+                                         {% elseif category.mainCategoryType == 'enfant' %}#4facfe 0%, #00f2fe 100%
+                                         {% elseif category.mainCategoryType == 'accessoires' %}#43e97b 0%, #38f9d7 100%
+                                         {% else %}#667eea 0%, #764ba2 100%{% endif %});">
+                                    {% if category.mainCategoryType == 'homme' %}
+                                        <i class="fas fa-male fa-4x text-white"></i>
+                                    {% elseif category.mainCategoryType == 'femme' %}
+                                        <i class="fas fa-female fa-4x text-white"></i>
+                                    {% elseif category.mainCategoryType == 'enfant' %}
+                                        <i class="fas fa-child fa-4x text-white"></i>
+                                    {% elseif category.mainCategoryType == 'accessoires' %}
                                         <i class="fas fa-gem fa-4x text-white"></i>
-                                    {% elseif 'sport' in category.slug %}
-                                        <i class="fas fa-running fa-4x text-white"></i>
-                                    {% elseif 'chronographe' in category.slug %}
-                                        <i class="fas fa-stopwatch fa-4x text-white"></i>
-                                    {% elseif 'plongee' in category.slug %}
-                                        <i class="fas fa-swimmer fa-4x text-white"></i>
-                                    {% elseif 'aviateur' in category.slug %}
-                                        <i class="fas fa-plane fa-4x text-white"></i>
                                     {% else %}
                                         <i class="fas fa-clock fa-4x text-white"></i>
                                     {% endif %}
@@ -48,7 +52,7 @@
                                 <p class="category-description">{{ category.description }}</p>
                                 <div class="mt-3">
                                     <span class="btn btn-light btn-sm">
-                                        {{ category.activeProducts|length }} produit{{ category.activeProducts|length > 1 ? 's' : '' }}
+                                        Découvrir la collection
                                         <i class="fas fa-arrow-right ms-1"></i>
                                     </span>
                                 </div>

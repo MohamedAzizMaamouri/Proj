@@ -13,11 +13,16 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="display-6 fw-light mb-1">Gestion des catégories</h1>
-                    <p class="mb-0 text-light">{{ categories|length }} catégorie(s) au total</p>
+                    <p class="mb-0 text-light">{{ mainCategories|length }} catégorie(s) principale(s) • {{ subcategories|length }} sous-catégorie(s)</p>
                 </div>
-                <a href="{{ path('app_admin_category_new') }}" class="btn btn-light">
-                    <i class="fas fa-plus me-2"></i>Nouvelle catégorie
-                </a>
+                <div class="btn-group">
+                    <a href="{{ path('app_admin_main_category_new') }}" class="btn btn-light">
+                        <i class="fas fa-plus me-2"></i>Catégorie principale
+                    </a>
+                    <a href="{{ path('app_admin_subcategory_new') }}" class="btn btn-outline-light">
+                        <i class="fas fa-plus me-2"></i>Sous-catégorie
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -25,18 +30,40 @@
     <div class="container py-5">
         <!-- Filters -->
         <div class="row mb-4">
-            <div class="col-lg-8">
+            <div class="col-lg-12">
                 <div class="bg-white p-4 shadow-sm rounded">
                     <h5 class="mb-3">Filtres</h5>
                     <form method="get" class="row g-3">
-                        <div class="col-md-6">
-                            <label for="search" class="form-label">Recherche</label>
-                            <input type="text" class="form-control" id="search" name="search" value="{{ current_search }}" placeholder="Nom ou description...">
+                        <!-- Main Categories Filter -->
+                        <div class="col-md-3">
+                            <label for="main_status" class="form-label">Catégories principales</label>
+                            <select class="form-select" id="main_status" name="main_status">
+                                <option value="all" {{ current_main_status == 'all' ? 'selected' : '' }}>Toutes</option>
+                                <option value="active" {{ current_main_status == 'active' ? 'selected' : '' }}>Actives uniquement</option>
+                                <option value="inactive" {{ current_main_status == 'inactive' ? 'selected' : '' }}>Inactives uniquement</option>
+                            </select>
                         </div>
-                        <div class="col-md-4">
-                            <label for="status" class="form-label">Statut</label>
+
+                        <!-- Subcategories Filters -->
+                        <div class="col-md-2">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" class="form-control" id="search" name="search" value="{{ current_search }}" placeholder="Nom...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="main_category" class="form-label">Par catégorie principale</label>
+                            <select class="form-select" id="main_category" name="main_category">
+                                <option value="">Toutes les catégories principales</option>
+                                {% for mainCategory in activeMainCategories %}
+                                    <option value="{{ mainCategory.id }}" {{ current_main_category == mainCategory.id ? 'selected' : '' }}>
+                                        {{ mainCategory.name }} ({{ mainCategory.children|length }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Statut sous-cat.</label>
                             <select class="form-select" id="status" name="status">
-                                <option value="">Tous les statuts</option>
+                                <option value="">Tous</option>
                                 <option value="active" {{ current_status == 'active' ? 'selected' : '' }}>Actives</option>
                                 <option value="inactive" {{ current_status == 'inactive' ? 'selected' : '' }}>Inactives</option>
                             </select>
@@ -45,9 +72,9 @@
                             <button type="submit" class="btn btn-primary me-2">
                                 <i class="fas fa-search me-1"></i>Filtrer
                             </button>
-                            {% if current_search or current_status %}
+                            {% if current_search or current_status or current_main_category or current_main_status != 'active' %}
                                 <a href="{{ path('app_admin_categories') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times me-1"></i>Effacer
+                                    <i class="fas fa-times me-1"></i>Reset
                                 </a>
                             {% endif %}
                         </div>
@@ -56,23 +83,158 @@
             </div>
         </div>
 
-        <!-- Categories Grid -->
+        <!-- Main Categories Section -->
+        <div class="bg-white shadow-sm rounded mb-4">
+            <div class="p-4 border-bottom bg-light">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="fas fa-layer-group me-2"></i>Catégories Principales
+                        {% if current_main_status == 'inactive' %}
+                            <span class="badge bg-secondary">Inactives</span>
+                        {% elseif current_main_status == 'all' %}
+                            <span class="badge bg-info">Toutes</span>
+                        {% else %}
+                            <span class="badge bg-success">Actives</span>
+                        {% endif %}
+                    </h5>
+                    <span class="badge bg-primary">{{ mainCategories|length }}</span>
+                </div>
+            </div>
+
+            {% if mainCategories is empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-layer-group fa-4x text-muted mb-4"></i>
+                    {% if current_main_status == 'inactive' %}
+                        <h6 class="fw-light">Aucune catégorie principale inactive</h6>
+                        <p class="text-muted">Toutes les catégories principales sont actives</p>
+                    {% else %}
+                        <h6 class="fw-light">Aucune catégorie principale</h6>
+                        <a href="{{ path('app_admin_main_category_new') }}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus me-2"></i>Créer une catégorie principale
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Catégorie</th>
+                            <th>Sous-catégories</th>
+                            <th>Produits totaux</th>
+                            <th>Statut</th>
+                            <th>Ordre</th>
+                            <th width="200">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for category in mainCategories %}
+                            <tr class="{{ category.isIsActive ? '' : 'table-warning' }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if category.image %}
+                                            <img src="{{ asset('uploads/categories/' ~ category.image) }}" width="50" height="50" class="rounded me-3" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-primary rounded me-3 d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+                                                <i class="fas fa-layer-group"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-600">{{ category.name }}</div>
+                                            <span class="badge bg-primary">Principale</span>
+                                            {% if not category.isIsActive %}
+                                                <span class="badge bg-warning text-dark">Inactive</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info fs-6">{{ category.activeChildren|length }}</span>
+                                    {% if category.children|length > 0 %}
+                                        <small class="text-muted d-block">{{ category.children|length }} total</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success fs-6">{{ category.products|length }}</span>
+                                </td>
+                                <td>
+                                    {% if category.isIsActive %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ category.sortOrder }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_category_edit', {id: category.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_category_toggle_status', {id: category.id}) }}" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ category.id) }}">
+                                            <button class="btn btn-outline-warning" title="{{ category.isIsActive ? 'Désactiver' : 'Activer' }}">
+                                                <i class="fas fa-{{ category.isIsActive ? 'pause' : 'play' }}"></i>
+                                            </button>
+                                        </form>
+                                        {% if category.children|length == 0 and category.products|length == 0 %}
+                                            <form method="post" action="{{ path('app_admin_category_delete', {id: category.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie principale ?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+                                                <button class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn btn-outline-danger" title="Impossible de supprimer (contient des sous-catégories ou produits)" disabled>
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Subcategories Section -->
         <div class="bg-white shadow-sm rounded">
-            {% if categories is empty %}
+            <div class="p-4 border-bottom">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Sous-catégories
+                        {% if current_main_category %}
+                            {% for mainCategory in activeMainCategories %}
+                                {% if mainCategory.id == current_main_category %}
+                                    <span class="badge bg-primary ms-2">{{ mainCategory.name }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </h5>
+                    <span class="badge bg-secondary">{{ subcategories|length }}</span>
+                </div>
+            </div>
+
+            {% if subcategories is empty %}
                 <div class="text-center py-5">
                     <i class="fas fa-tags fa-4x text-muted mb-4"></i>
-                    <h3 class="fw-light">Aucune catégorie trouvée</h3>
-                    <p class="text-muted mb-4">Commencez par créer votre première catégorie</p>
-                    <a href="{{ path('app_admin_category_new') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Ajouter une catégorie
+                    {% if current_main_category %}
+                        <h6 class="fw-light">Aucune sous-catégorie trouvée pour cette catégorie principale</h6>
+                    {% else %}
+                        <h6 class="fw-light">Aucune sous-catégorie trouvée</h6>
+                    {% endif %}
+                    <a href="{{ path('app_admin_subcategory_new') }}" class="btn btn-secondary mt-2">
+                        <i class="fas fa-plus me-2"></i>Créer une sous-catégorie
                     </a>
                 </div>
             {% else %}
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead class="table-dark">
+                        <thead class="table-light">
                         <tr>
-                            <th>Catégorie</th>
+                            <th>Sous-catégorie</th>
+                            <th>Catégorie principale</th>
                             <th>Produits</th>
                             <th>Statut</th>
                             <th>Créée le</th>
@@ -80,30 +242,37 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for category in categories %}
+                        {% for category in subcategories %}
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         {% if category.image %}
-                                            <img src="{{ asset('uploads/categories/' ~ category.image) }}" width="60" height="60" class="rounded me-3" style="object-fit: cover;">
+                                            <img src="{{ asset('uploads/categories/' ~ category.image) }}" width="50" height="50" class="rounded me-3" style="object-fit: cover;">
                                         {% else %}
-                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                                <i class="fas fa-tags fa-2x text-muted"></i>
+                                            <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+                                                <i class="fas fa-tag"></i>
                                             </div>
                                         {% endif %}
                                         <div>
                                             <div class="fw-600">{{ category.name }}</div>
                                             {% if category.description %}
-                                                <small class="text-muted">{{ category.description|length > 50 ? category.description|slice(0, 50) ~ '...' : category.description }}</small>
+                                                <small class="text-muted">{{ category.description|length > 40 ? category.description|slice(0, 40) ~ '...' : category.description }}</small>
                                             {% endif %}
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary fs-6">{{ category.products|length }}</span>
-                                    {% if category.products|length > 0 %}
-                                        <small class="text-muted d-block">produits</small>
+                                    {% if category.parent %}
+                                        <span class="badge bg-primary">{{ category.parent.name }}</span>
+                                        {% if not category.parent.isIsActive %}
+                                            <br><small class="text-warning">Parent inactif</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-warning">Aucune</span>
                                     {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary fs-6">{{ category.products|length }}</span>
                                 </td>
                                 <td>
                                     {% if category.isIsActive %}
@@ -117,9 +286,6 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ path('app_category_show', {slug: category.slug}) }}" class="btn btn-outline-secondary" title="Voir" target="_blank">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
                                         <a href="{{ path('app_admin_category_edit', {id: category.id}) }}" class="btn btn-outline-primary" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -130,7 +296,7 @@
                                             </button>
                                         </form>
                                         {% if category.products|length == 0 %}
-                                            <form method="post" action="{{ path('app_admin_category_delete', {id: category.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                                            <form method="post" action="{{ path('app_admin_category_delete', {id: category.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette sous-catégorie ?')">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
                                                 <button class="btn btn-outline-danger" title="Supprimer">
                                                     <i class="fas fa-trash"></i>

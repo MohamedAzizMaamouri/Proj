@@ -1,6 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nos Montres - ENZO Collection{% endblock %}
+{% block title %}
+    {% if current_category %}
+        {{ current_category.name }} - Project Collection
+    {% else %}
+        Nos Montres - Project Collection
+    {% endif %}
+{% endblock %}
 
 {% block categories_section %}
     {# Override to prevent duplication #}
@@ -13,13 +19,19 @@
             <div class="text-center">
                 <h1 class="display-4 fw-light mb-3">
                     {% if current_category %}
-                        {{ current_category.name }}
+                        {% if current_subcategory %}
+                            {{ current_subcategory.name }}
+                        {% else %}
+                            Tous les {{ current_category.name }}
+                        {% endif %}
                     {% else %}
-                        Notre Collection
+                        Notre Collection Complète
                     {% endif %}
                 </h1>
                 <p class="lead text-muted">
-                    {% if current_category %}
+                    {% if current_subcategory %}
+                        {{ current_subcategory.description }}
+                    {% elseif current_category %}
                         {{ current_category.description }}
                     {% else %}
                         Découvrez notre sélection exclusive de montres
@@ -33,136 +45,284 @@
         <div class="row">
             <!-- Sidebar Filters -->
             <div class="col-lg-3 mb-4">
+                <!-- Category Navigation -->
+                <div class="bg-white p-4 shadow-sm mb-4">
+                    {% if current_category %}
+                        <!-- When in a main category, show back to all categories and current category info -->
+                        <h5 class="fw-600 mb-4">{{ current_category.name }}</h5>
+                        <div class="list-group list-group-flush">
+                            <a href="{{ path('app_category_index') }}"
+                               class="list-group-item list-group-item-action">
+                                <i class="fas fa-arrow-left me-2"></i>Retour aux catégories
+                            </a>
+                            <a href="{{ path('app_product_index', {category: current_category.slug}) }}"
+                               class="list-group-item list-group-item-action {{ not current_subcategory ? 'active' : '' }}">
+                                <i class="fas fa-th-large me-2"></i>Tous les {{ current_category.name|lower }}
+                                <span class="badge bg-secondary float-end">
+                                    {% if current_subcategory %}
+                                        {{ mainCategoryDisplayCount }}
+                                    {% else %}
+                                        {{ products|length }}
+                                    {% endif %}
+                                </span>
+                            </a>
+
+                            <!-- Show subcategories of current main category -->
+                            {% if availableSubcategories|length > 0 %}
+                                {% for subcat in availableSubcategories %}
+                                    <a href="{{ path('app_product_index', {category: current_category.slug, subcategory: subcat.slug}) }}"
+                                       class="list-group-item list-group-item-action {{ current_subcategory and current_subcategory.id == subcat.id ? 'active' : '' }}">
+                                        {% if current_category.mainCategoryType == 'homme' %}
+                                            <i class="fas fa-male me-2"></i>
+                                        {% elseif current_category.mainCategoryType == 'femme' %}
+                                            <i class="fas fa-female me-2"></i>
+                                        {% elseif current_category.mainCategoryType == 'enfant' %}
+                                            <i class="fas fa-child me-2"></i>
+                                        {% elseif current_category.mainCategoryType == 'accessoires' %}
+                                            <i class="fas fa-gem me-2"></i>
+                                        {% endif %}
+                                        {{ subcat.name }}
+                                        <span class="badge bg-primary float-end">
+                                            {% if current_subcategory and current_subcategory.id == subcat.id %}
+                                                {{ products|length }}
+                                            {% else %}
+                                                {{ subcat.productCount }}
+                                            {% endif %}
+                                        </span>
+                                    </a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <!-- When not in a specific category, show only main categories -->
+                        <h5 class="fw-600 mb-4">Catégories Principales</h5>
+                        <div class="list-group list-group-flush">
+                            {% for mainCategory in mainCategories %}
+                                <a href="{{ path('app_category_index') }}"
+                                   class="list-group-item list-group-item-action">
+                                    {% if mainCategory.mainCategoryType == 'homme' %}
+                                        <i class="fas fa-male me-2"></i>
+                                    {% elseif mainCategory.mainCategoryType == 'femme' %}
+                                        <i class="fas fa-female me-2"></i>
+                                    {% elseif mainCategory.mainCategoryType == 'enfant' %}
+                                        <i class="fas fa-child me-2"></i>
+                                    {% elseif mainCategory.mainCategoryType == 'accessoires' %}
+                                        <i class="fas fa-gem me-2"></i>
+                                    {% endif %}
+                                    {{ mainCategory.name }}
+                                    <span class="badge bg-primary float-end">{{ mainCategory.productCount }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Filters Form -->
                 <div class="bg-white p-4 shadow-sm">
                     <h5 class="fw-600 mb-4">Filtres</h5>
 
                     <form method="get">
+                        <!-- Keep current main category -->
+                        {% if current_category %}
+                            <input type="hidden" name="category" value="{{ current_category.slug }}">
+                        {% endif %}
+
+                        <!-- Keep current subcategory -->
+                        {% if current_subcategory %}
+                            <input type="hidden" name="subcategory" value="{{ current_subcategory.slug }}">
+                        {% endif %}
+
+                        <!-- Search Filter -->
                         <div class="mb-4">
                             <label for="search" class="form-label fw-500">Recherche</label>
-                            <input type="text" class="form-control" id="search" name="search" value="{{ current_search }}" placeholder="Nom ou description...">
+                            <input type="text" class="form-control" id="search" name="search"
+                                   value="{{ current_search }}" placeholder="Nom, marque, modèle...">
                         </div>
 
+                        <!-- Subcategory Filter (only show when in a main category) -->
+                        {% if current_category and availableSubcategories|length > 0 %}
+                            <div class="mb-4">
+                                <label for="subcategory_select" class="form-label fw-500">Type de {{ current_category.name }}</label>
+                                <select class="form-select" id="subcategory_select" name="subcategory">
+                                    <option value="">Tous les {{ current_category.name|lower }}</option>
+                                    {% for subcat in availableSubcategories %}
+                                        <option value="{{ subcat.slug }}" {{ current_subcategory and current_subcategory.id == subcat.id ? 'selected' : '' }}>
+                                            {{ subcat.name }} ({{ subcat.productCount }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+
+                        <!-- Brand Filter -->
                         <div class="mb-4">
                             <label for="brand" class="form-label fw-500">Marque</label>
                             <select class="form-select" id="brand" name="brand">
                                 <option value="">Toutes les marques</option>
                                 {% for brand in brands %}
-                                    <option value="{{ brand }}" {{ current_brand == brand ? 'selected' : '' }}>{{ brand }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="category" class="form-label fw-500">Catégorie</label>
-                            <select class="form-select" id="category" name="category">
-                                <option value="">Toutes les catégories</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.slug }}" {{ current_category and current_category.slug == category.slug ? 'selected' : '' }}>
-                                        {{ category.name }}
+                                    <option value="{{ brand }}" {{ current_brand == brand ? 'selected' : '' }}>
+                                        {{ brand }}
                                     </option>
                                 {% endfor %}
                             </select>
                         </div>
 
+                        <!-- Sort Filter -->
+                        <div class="mb-4">
+                            <label for="sort" class="form-label fw-500">Trier par</label>
+                            <select class="form-select" id="sort" name="sort">
+                                <option value="" {{ not current_sort ? 'selected' : '' }}>Plus récent</option>
+                                <option value="price_asc" {{ current_sort == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
+                                <option value="price_desc" {{ current_sort == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                                <option value="name_asc" {{ current_sort == 'name_asc' ? 'selected' : '' }}>Nom A-Z</option>
+                                <option value="name_desc" {{ current_sort == 'name_desc' ? 'selected' : '' }}>Nom Z-A</option>
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-dark w-100">
-                            <i class="fas fa-search me-2"></i>Filtrer
+                            <i class="fas fa-search me-2"></i>Appliquer les filtres
                         </button>
 
-                        {% if current_search or current_brand or current_category %}
-                            <a href="{{ path('app_product_index') }}" class="btn btn-outline-secondary w-100 mt-2">
+                        <!-- Clear Filters -->
+                        {% if current_search or current_brand or current_subcategory %}
+                            <a href="{{ current_category ? path('app_product_index', {category: current_category.slug}) : path('app_category_index') }}"
+                               class="btn btn-outline-secondary w-100 mt-2">
                                 <i class="fas fa-times me-2"></i>Effacer les filtres
                             </a>
                         {% endif %}
                     </form>
                 </div>
 
-                <!-- Categories -->
-                <div class="bg-white p-4 shadow-sm mt-4">
-                    <h5 class="fw-600 mb-4">Catégories</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <a href="{{ path('app_product_index') }}"
-                               class="text-decoration-none {{ not current_category ? 'text-dark fw-bold' : 'text-muted' }}">
-                                Toutes les montres
-                            </a>
-                        </li>
-                        {% for category in categories %}
-                            <li class="mb-2">
-                                <a href="{{ path('app_category_show', {slug: category.slug}) }}"
-                                   class="text-decoration-none {{ current_category and current_category.id == category.id ? 'text-dark fw-bold' : 'text-muted' }}">
-                                    {{ category.name }}
-                                    {% if category.products|length > 0 %}
-                                        <span class="badge bg-light text-dark ms-1">{{ category.activeProducts|length }}</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                <!-- Quick Stats (only show when in main category with subcategories) -->
+                {% if current_category and availableSubcategories|length > 0 and not current_subcategory %}
+                    <div class="bg-white p-4 shadow-sm mt-4">
+                        <h5 class="fw-600 mb-4">Répartition {{ current_category.name }}</h5>
+                        <div class="row g-2">
+                            {% for subcat in availableSubcategories %}
+                                <div class="col-12">
+                                    <a href="{{ path('app_product_index', {category: current_category.slug, subcategory: subcat.slug}) }}"
+                                       class="btn btn-outline-primary btn-sm w-100 d-flex justify-content-between align-items-center">
+                                        <span>{{ subcat.name }}</span>
+                                        <span class="badge bg-light text-dark">{{ subcat.productCount }}</span>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
 
             <!-- Products Grid -->
             <div class="col-lg-9">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_category_index') }}" class="text-decoration-none">Catégories</a>
+                        </li>
+                        {% if current_category %}
+                            <li class="breadcrumb-item {{ not current_subcategory ? 'active' : '' }}">
+                                {% if current_subcategory %}
+                                    <a href="{{ path('app_product_index', {category: current_category.slug}) }}" class="text-decoration-none">
+                                        {{ current_category.name }}
+                                    </a>
+                                {% else %}
+                                    {{ current_category.name }}
+                                {% endif %}
+                            </li>
+                            {% if current_subcategory %}
+                                <li class="breadcrumb-item active">{{ current_subcategory.name }}</li>
+                            {% endif %}
+                        {% endif %}
+                    </ol>
+                </nav>
+
+                <!-- Results Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="fw-light">
-                        {% if current_category %}
-                            {{ current_category.name }} ({{ products|length }})
+                        {% if current_subcategory %}
+                            {{ current_subcategory.name }} ({{ products|length }})
+                        {% elseif current_category %}
+                            Tous les {{ current_category.name }} ({{ products|length }})
                         {% else %}
-                            Montres ({{ products|length }})
+                            Choisissez une catégorie
                         {% endif %}
                     </h2>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small">Trier par:</span>
-                        <select class="form-select form-select-sm" style="width: auto;" onchange="sortProducts(this.value)">
-                            <option value="newest">Plus récent</option>
-                            <option value="price_asc">Prix croissant</option>
-                            <option value="price_desc">Prix décroissant</option>
-                            <option value="name_asc">Nom A-Z</option>
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Active Filters Display -->
-                {% if current_search or current_brand or current_category %}
+                {% if current_search or current_brand or current_subcategory %}
                     <div class="mb-4">
                         <h6 class="text-muted mb-2">Filtres actifs:</h6>
                         <div class="d-flex flex-wrap gap-2">
+                            {% if current_subcategory %}
+                                <span class="badge bg-info">
+                                    Type: {{ current_subcategory.name }}
+                                    <a href="{{ path('app_product_index', {category: current_category.slug}) }}" class="text-white ms-1">×</a>
+                                </span>
+                            {% endif %}
                             {% if current_search %}
                                 <span class="badge bg-primary">
                                     Recherche: "{{ current_search }}"
-                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({search: null})|url_encode }}" class="text-white ms-1">×</a>
+                                    <a href="?{{ app.request.query.all|merge({search: null})|url_encode }}" class="text-white ms-1">×</a>
                                 </span>
                             {% endif %}
                             {% if current_brand %}
-                                <span class="badge bg-primary">
+                                <span class="badge bg-success">
                                     Marque: {{ current_brand }}
-                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({brand: null})|url_encode }}" class="text-white ms-1">×</a>
-                                </span>
-                            {% endif %}
-                            {% if current_category %}
-                                <span class="badge bg-primary">
-                                    Catégorie: {{ current_category.name }}
-                                    <a href="{{ path('app_product_index') }}?{{ app.request.query.all|merge({category: null})|url_encode }}" class="text-white ms-1">×</a>
+                                    <a href="?{{ app.request.query.all|merge({brand: null})|url_encode }}" class="text-white ms-1">×</a>
                                 </span>
                             {% endif %}
                         </div>
                     </div>
                 {% endif %}
 
-                {% if products is empty %}
+                <!-- Products Display -->
+                {% if not current_category %}
+                    <!-- Show category selection when no category is selected -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-th-large fa-4x text-muted mb-4"></i>
+                        <h3 class="fw-light">Sélectionnez une catégorie</h3>
+                        <p class="text-muted">Choisissez une catégorie pour voir nos produits.</p>
+                        <div class="mt-4">
+                            <a href="{{ path('app_category_index') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-th-large me-2"></i>Voir toutes les catégories
+                            </a>
+                        </div>
+                    </div>
+                {% elseif products is empty %}
                     <div class="text-center py-5">
                         <i class="fas fa-search fa-4x text-muted mb-4"></i>
                         <h3 class="fw-light">Aucun produit trouvé</h3>
-                        <p class="text-muted">Essayez de modifier vos critères de recherche</p>
-                        <a href="{{ path('app_product_index') }}" class="btn-primary-custom">Voir tous les produits</a>
+                        <p class="text-muted">
+                            {% if current_subcategory %}
+                                Aucun produit ne correspond à vos critères dans "{{ current_subcategory.name }}".
+                            {% elseif current_category %}
+                                Aucun produit ne correspond à vos critères dans "{{ current_category.name }}".
+                            {% else %}
+                                Aucun produit ne correspond à vos critères de recherche.
+                            {% endif %}
+                        </p>
+                        <div class="mt-4">
+                            {% if current_search or current_brand or current_subcategory %}
+                                <a href="{{ current_category ? path('app_product_index', {category: current_category.slug}) : path('app_category_index') }}"
+                                   class="btn btn-primary me-3">
+                                    {% if current_category %}
+                                        Voir tous les {{ current_category.name|lower }}
+                                    {% else %}
+                                        Voir toutes les catégories
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                            <a href="{{ path('app_category_index') }}" class="btn btn-outline-dark">
+                                Retour aux catégories
+                            </a>
+                        </div>
                     </div>
                 {% else %}
-                    <div class="row g-4" id="products-grid">
+                    <div class="row g-4">
                         {% for product in products %}
-                            <div class="col-lg-4 col-md-6 product-item"
-                                 data-name="{{ product.name|lower }}"
-                                 data-price="{{ product.price }}"
-                                 data-date="{{ product.createdAt|date('Y-m-d') }}">
+                            <div class="col-lg-4 col-md-6">
                                 <div class="product-card">
                                     <div class="position-relative overflow-hidden">
                                         {% if product.image %}
@@ -182,12 +342,12 @@
                                                 {% if app.user and product.stock > 0 %}
                                                     <form method="post" action="{{ path('app_cart_add', {id: product.id}) }}" class="d-inline">
                                                         <button type="submit" class="btn btn-dark btn-sm mb-2">
-                                                            <i class="fas fa-cart-plus me-1"></i>Ajouter au Panier
+                                                            <i class="fas fa-cart-plus me-1"></i>Ajouter
                                                         </button>
                                                     </form>
                                                 {% elseif product.stock == 0 %}
                                                     <button class="btn btn-secondary btn-sm mb-2" disabled>
-                                                        <i class="fas fa-times me-1"></i>Rupture de Stock
+                                                        <i class="fas fa-times me-1"></i>Rupture
                                                     </button>
                                                 {% endif %}
                                             </div>
@@ -212,9 +372,9 @@
                                         <small class="text-muted">{{ product.model }}</small>
                                         {% if product.category %}
                                             <div class="mt-2">
-                                                <a href="{{ path('app_category_show', {slug: product.category.slug}) }}" class="badge bg-light text-dark text-decoration-none">
-                                                    {{ product.category.name }}
-                                                </a>
+                                <span class="badge bg-light text-dark">
+                                    {{ product.category.name }}
+                                </span>
                                             </div>
                                         {% endif %}
                                     </div>
@@ -234,28 +394,14 @@
         .product-card:hover .product-overlay {
             opacity: 1 !important;
         }
-    </style>
 
-    <script>
-        function sortProducts(sortBy) {
-            const grid = document.getElementById('products-grid');
-            const items = Array.from(grid.children);
-
-            items.sort((a, b) => {
-                switch(sortBy) {
-                    case 'price_asc':
-                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                    case 'price_desc':
-                        return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                    case 'name_asc':
-                        return a.dataset.name.localeCompare(b.dataset.name);
-                    case 'newest':
-                    default:
-                        return new Date(b.dataset.date) - new Date(a.dataset.date);
-                }
-            });
-
-            items.forEach(item => grid.appendChild(item));
+        .list-group-item.active {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
         }
-    </script>
+
+        .badge {
+            font-size: 0.7em;
+        }
+    </style>
 {% endblock %}
